@@ -126,4 +126,4 @@ awslogout() {
 export BROWSER=wslview
 
 # Winnifred fullstack dev runner
-alias winnifred='python3 ~/scripts/runWinnifredFullstack.py'
+alias winnifred='python3 ~/projects/Winnifred/scripts/run-local.py'
