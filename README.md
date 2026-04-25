@@ -27,7 +27,7 @@ Prefix: **`Ctrl-a`**
 | Action | Binding |
 |--------|---------|
 | Split right (vertical) | `prefix \|` |
-| Split below (horizontal) | `prefix -` |
+| Split below (horizontal) | `prefix _` |
 | Navigate left | `prefix h` |
 | Navigate down | `prefix j` |
 | Navigate up | `prefix k` |
