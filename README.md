@@ -1,52 +1,77 @@
-# dotfiles
+# dotfiles — WSL / Ubuntu
 
-Personal dotfiles managed via symlinks.
+Personal dotfiles for WSL2 (Ubuntu-based) environments.
 
 ## Setup
 
-Each file in this repo is symlinked to its standard location in `$HOME`:
+Clone the repo and create symlinks:
 
-| Dotfile | Source |
-|---------|--------|
-| `~/.zshrc` | `zsh/zshrc` |
-| `~/.p10k.zsh` | `zsh/p10k.zsh` |
-| `~/.tmux.conf` | `tmux/tmux.conf` |
-| `~/.gitconfig` | `git/gitconfig` |
-| `~/.bashrc` | `bash/bashrc` |
-| `~/.profile` | `bash/profile` |
-| `~/.dircolors` | `shell/dircolors` |
-| `~/.claude/settings.json` | `claude/settings.json` |
-| `~/.claude/statusline.sh` | `claude/statusline.sh` |
+```bash
+git clone https://github.com/JoshuaHayesWasHere/dotfiles.git ~/dotfiles
+git checkout wsl-ubuntu
+
+ln -s ~/dotfiles/zsh/zshrc ~/.zshrc
+ln -s ~/dotfiles/zsh/p10k.zsh ~/.p10k.zsh
+ln -s ~/dotfiles/git/gitconfig ~/.gitconfig
+ln -s ~/dotfiles/bash/bashrc ~/.bashrc
+ln -s ~/dotfiles/bash/profile ~/.profile
+ln -s ~/dotfiles/shell/dircolors ~/.dircolors
+mkdir -p ~/.claude
+ln -s ~/dotfiles/claude/settings.json ~/.claude/settings.json
+ln -s ~/dotfiles/claude/statusline.sh ~/.claude/statusline.sh
+```
 
 ---
 
-## Tmux
+## Installation
 
-Prefix: **`Ctrl-a`**
+### 1. Core tools
 
-### Panes
+```bash
+sudo apt update
+sudo apt install zsh ripgrep bat eza zoxide
+```
 
-| Action | Binding |
-|--------|---------|
-| Split right (vertical) | `prefix \|` |
-| Split below (horizontal) | `prefix _` |
-| Navigate left | `prefix h` |
-| Navigate down | `prefix j` |
-| Navigate up | `prefix k` |
-| Navigate right | `prefix l` |
-| Resize left | `prefix H` |
-| Resize down | `prefix J` |
-| Resize up | `prefix K` |
-| Resize right | `prefix L` |
+> `bat` ships as `batcat` on Ubuntu due to a naming conflict — the aliases in `.zshrc` already account for this.
 
-### Copy mode (vi)
+### 2. Oh My Zsh
 
-| Action | Binding |
-|--------|---------|
-| Enter copy mode | `prefix [` |
-| Begin selection | `v` |
-| Yank selection | `y` |
-| Cancel | `Escape` |
+```bash
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+```
+
+### 3. Powerlevel10k theme
+
+```bash
+git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \
+  ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
+```
+
+### 4. Zsh plugins
+
+```bash
+git clone https://github.com/zsh-users/zsh-autosuggestions \
+  ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+
+git clone https://github.com/zsh-users/zsh-syntax-highlighting \
+  ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+```
+
+### 5. Nerd Font
+
+Install a [Nerd Font](https://www.nerdfonts.com/) in your Windows terminal (e.g. MesloLGS NF) and set it as the default font. Required for `eza` icons and Powerlevel10k glyphs.
+
+### 6. NVM (Node Version Manager)
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+```
+
+### 7. Set zsh as default shell
+
+```bash
+chsh -s $(which zsh)
+```
 
 ---
 
@@ -70,7 +95,7 @@ Prefix: **`Ctrl-a`**
 
 | Alias | Command | Description |
 |-------|---------|-------------|
-| `winnifred` | `python3 ~/scripts/runWinnifredFullstack.py` | Start Winnifred fullstack dev environment |
+| `winnifred` | `python3 ~/projects/Winnifred/scripts/run-local.py` | Start Winnifred fullstack dev environment |
 
 ### AWS (SSO)
 
