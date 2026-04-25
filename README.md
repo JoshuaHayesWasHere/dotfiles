@@ -38,15 +38,22 @@ Each branch has its own README with installation instructions and symlink setup.
 
 ---
 
-## Aliases (same across all branches)
+## Aliases
 
-| Alias | Replaces | Tool |
-|-------|----------|------|
-| `ls` | `ls` | eza |
+**Drop-in replacements** (same command name, different engine)
+
+| Command | Powered by |
+|---------|------------|
+| `ls` | eza |
+| `cat` | bat |
+| `grep` | ripgrep |
+| `cd` | zoxide |
+
+**New shortcuts**
+
+| Alias | Expands to | Powered by |
+|-------|------------|------------|
 | `ll` | `ls -l` | eza |
 | `la` | `ls -la` | eza |
 | `lt` | `tree` | eza |
-| `cat` | `cat` | bat |
-| `grep` | `grep` | ripgrep |
-| `cd` | `cd` | zoxide |
-| `ci` | — | zoxide interactive |
+| `ci` | *(interactive chooser)* | zoxide |
