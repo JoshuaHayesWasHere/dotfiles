@@ -3,7 +3,7 @@ INPUT=$(cat)
 # Debug: echo "$INPUT" > /tmp/statusline-debug.json
 
 echo "$INPUT" | python3 -c "
-import sys, json, datetime, os, subprocess, re
+import sys, json, datetime, os, subprocess
 
 # ANSI colors
 R      = '\033[0m'
@@ -14,7 +14,6 @@ YELLOW = '\033[93m'
 GREEN  = '\033[92m'
 CYAN   = '\033[96m'
 WHITE  = '\033[97m'
-MAG    = '\033[95m'
 
 def used_color(pct):
     try: v = float(pct)
@@ -31,15 +30,8 @@ def fmt_pct(v):
 def fmt_reset(ts):
     if not ts: return ''
     try:
-        t = datetime.datetime.fromtimestamp(int(ts))
-        return t.strftime('%-I:%M %p')
+        return datetime.datetime.fromtimestamp(int(ts)).strftime('%-I:%M %p')
     except: return ''
-
-def strip_ansi(s):
-    return re.sub(r'\033\[[0-9;]*[mK]', '', s)
-
-def vlen(s):
-    return len(strip_ansi(s))
 
 try:
     data = json.load(sys.stdin)
@@ -56,19 +48,39 @@ if len(parts) > 4:
     cwd = '..' + '/' + '/'.join(parts[-2:])
 dir_str = f'{CYAN}{BOLD}{cwd}{R}'
 
-# Git branch
-try:
-    branch = subprocess.check_output(
-        ['git', '-C', data.get('cwd') or os.getcwd(), 'branch', '--show-current'],
-        stderr=subprocess.DEVNULL
-    ).decode().strip()
-    branch_str = f'{YELLOW}{branch}{R}' if branch else ''
-except:
-    branch_str = ''
+# Git info
+git_cwd = data.get('cwd') or os.getcwd()
 
-# Time — H:MM AM/PM, no leading zero
-now = datetime.datetime.now()
-time_str = f'{WHITE}{now.strftime(\"%-I:%M %p\")}{R}'
+def run_git(args):
+    try:
+        return subprocess.check_output(
+            ['git', '-C', git_cwd] + args,
+            stderr=subprocess.DEVNULL
+        ).decode().strip()
+    except:
+        return ''
+
+branch = run_git(['branch', '--show-current'])
+dirty  = len([l for l in run_git(['status', '--porcelain']).splitlines() if l.strip()])
+try: ahead  = int(run_git(['rev-list', '@{u}..HEAD', '--count']) or 0)
+except: ahead = 0
+try: behind = int(run_git(['rev-list', 'HEAD..@{u}', '--count']) or 0)
+except: behind = 0
+
+git_status_parts = []
+if dirty:  git_status_parts.append(f'{YELLOW}●{dirty}{R}')
+if ahead:  git_status_parts.append(f'{CYAN}↑{ahead}{R}')
+if behind: git_status_parts.append(f'{RED}↓{behind}{R}')
+
+time_str = f'{WHITE}{datetime.datetime.now().strftime(\"%-I:%M %p\")}{R}'
+sep  = f'  {GRAY}|{R}  '
+pipe = f'  {GRAY}|{R}  '
+
+# git seg: branch  ●N ↑N ↓N  |  time
+git_seg_parts = []
+if branch: git_seg_parts.append(f'{YELLOW}{branch}{R}')
+if git_status_parts: git_seg_parts.append(' '.join(git_status_parts))
+git_seg = '  '.join(git_seg_parts) + pipe + time_str
 
 # Context
 ctx = data.get('context_window') or {}
@@ -95,19 +107,8 @@ rst5 = fmt_reset(w5.get('resets_at'))
 if rst5:
     r5_str += f'  {GRAY}rst {rst5}{R}'
 
-# Terminal width for right-aligning the time
-try:
-    term_width = os.get_terminal_size().columns
-except:
-    term_width = 80
-
-sep = f'  {GRAY}|{R}  '
-
-# Line 1: dir  |  branch  [right-aligned]  time
-left_parts = [dir_str] + ([branch_str] if branch_str else [])
-line1_left = sep.join(left_parts)
-padding = max(2, term_width - vlen(line1_left) - vlen(time_str))
-line1 = line1_left + ' ' * padding + time_str
+# Line 1: dir  |  branch  ●N ↑N ↓N  |  time
+line1 = sep.join([dir_str, git_seg])
 
 # Line 2: ctx  |  compact warn  |  5h usage
 line2 = sep.join([ctx_str, compact_str, r5_str])
