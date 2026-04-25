@@ -8,9 +8,6 @@ fi
 # Configure Path
 export PATH=$(echo "$PATH" | tr ':' '\n' | awk '!seen[$0]++' | tr '\n' ':')
 
-# Smarter cd command
-eval "$(zoxide init zsh)"
-
 ZSH_THEME="powerlevel10k/powerlevel10k"
 
 
@@ -66,6 +63,20 @@ export PATH="$HOME/.local/bin:$PATH"
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+
+# Smarter cd command (must load after oh-my-zsh to override cd)
+eval "$(zoxide init zsh)"
+
+# --- Modern CLI tools ---
+alias ls='eza --icons'
+alias ll='eza -l --icons --git'
+alias la='eza -la --icons --git'
+alias lt='eza --tree --icons'
+alias cat='batcat'
+alias bat='batcat'
+alias grep='rg'
+alias cd='z'
+alias ci='zi'
 
 # AWS profile switchers (SSO)
 awslogin() {
