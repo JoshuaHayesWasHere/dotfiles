@@ -107,14 +107,14 @@ chsh -s $(which zsh)
 | `lt`  | `eza --tree --icons` | Tree view |
 | `cat` | `bat` | Syntax-highlighted file viewer |
 | `grep`| `rg` | Fast search via ripgrep |
-| `cd`  | `z` | Smart directory jump via zoxide |
-| `ci`  | `zi` | Interactive zoxide directory picker |
+| `cd`  | zoxide via `--cmd cd` | Standard `cd`, plus frecency fallback (`cd projectname`) |
+| `ci`  | `cdi` | Interactive zoxide directory picker |
 
 ### Project shortcuts
 
 | Alias | Command |
 |-------|---------|
-| `winnifred` | `python3 ~/projects/Winnifred/scripts/run-local.py` |
+| `winnifred` | `python3 ~/repos/Winnifred/scripts/run-local.py` |
 
 ### AWS (SSO)
 
