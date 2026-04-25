@@ -78,7 +78,10 @@ pipe = f'  {GRAY}|{R}  '
 
 # git seg: branch  ●N ↑N ↓N  |  time
 git_seg_parts = []
-if branch: git_seg_parts.append(f'{YELLOW}{branch}{R}')
+if branch:
+    git_seg_parts.append(f'{YELLOW}{branch}{R}')
+else:
+    git_seg_parts.append(f'{GRAY}none{R}')
 if git_status_parts: git_seg_parts.append(' '.join(git_status_parts))
 git_seg = '  '.join(git_seg_parts) + pipe + time_str
 
