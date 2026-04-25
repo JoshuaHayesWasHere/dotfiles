@@ -1,0 +1,5 @@
+[user]
+	name = FriedGlue
+	email = josh.hayes121@icloud.com
+[credential]
+	helper = /mnt/c/Program\\ Files/Git/mingw64/bin/git-credential-manager.exe
