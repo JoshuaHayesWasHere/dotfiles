@@ -14,11 +14,11 @@
     ],
     "defaultMode": "plan"
   },
-  "verbose": true,
-  "agentPushNotifEnabled": true,
   "statusLine": {
     "type": "command",
     "command": "bash /home/joshh/.claude/statusline.sh",
     "refreshInterval": 1
-  }
+  },
+  "verbose": true,
+  "agentPushNotifEnabled": true
 }
