@@ -3,19 +3,17 @@ INPUT=$(cat)
 # Debug: echo "$INPUT" > /tmp/statusline-debug.json
 
 echo "$INPUT" | python3 -c "
-import sys, json, datetime, os
+import sys, json, datetime, os, subprocess, re
 
 # ANSI colors
 R      = '\033[0m'
 BOLD   = '\033[1m'
-DIM    = '\033[2m'
 GRAY   = '\033[90m'
 RED    = '\033[91m'
 YELLOW = '\033[93m'
 GREEN  = '\033[92m'
 CYAN   = '\033[96m'
 WHITE  = '\033[97m'
-BLUE   = '\033[94m'
 MAG    = '\033[95m'
 
 def used_color(pct):
@@ -25,37 +23,6 @@ def used_color(pct):
     if v < 80: return YELLOW
     return RED
 
-try:
-    data = json.load(sys.stdin)
-except:
-    data = {}
-
-# Model
-m = data.get('model') or {}
-model = (m.get('display_name') or m.get('id') or 'unknown') if isinstance(m, dict) else str(m)
-
-# Directory (from JSON cwd, fall back to shell cwd)
-cwd = data.get('cwd') or os.getcwd()
-home = os.path.expanduser('~')
-if cwd.startswith(home):
-    cwd = '~' + cwd[len(home):]
-parts = cwd.split('/')
-if len(parts) > 4:
-    cwd = '..' + '/' + '/'.join(parts[-2:])
-
-# Context
-ctx      = data.get('context_window') or {}
-ctx_used = ctx.get('used_percentage')
-ctx_rem  = ctx.get('remaining_percentage')
-
-# Cost
-cost_usd = (data.get('cost') or {}).get('total_cost_usd')
-
-# Rate limits
-rate = data.get('rate_limits') or {}
-w5   = rate.get('five_hour') or {}
-w7   = rate.get('seven_day') or {}
-
 def fmt_pct(v):
     if v is None: return '?'
     try: return str(round(float(v)))
@@ -64,24 +31,48 @@ def fmt_pct(v):
 def fmt_reset(ts):
     if not ts: return ''
     try:
-        return datetime.datetime.fromtimestamp(int(ts)).strftime('%I:%M %p')
+        t = datetime.datetime.fromtimestamp(int(ts))
+        return t.strftime('%-I:%M %p')
     except: return ''
 
-def fmt_cost(v):
-    if v is None: return '?'
-    try: return f'\${float(v):.2f}'
-    except: return '?'
+def strip_ansi(s):
+    return re.sub(r'\033\[[0-9;]*[mK]', '', s)
 
-sep = f'  {GRAY}|{R}  '
+def vlen(s):
+    return len(strip_ansi(s))
+
+try:
+    data = json.load(sys.stdin)
+except:
+    data = {}
 
 # Directory
+cwd = data.get('cwd') or os.getcwd()
+home = os.path.expanduser('~')
+if cwd.startswith(home):
+    cwd = '~' + cwd[len(home):]
+parts = cwd.split('/')
+if len(parts) > 4:
+    cwd = '..' + '/' + '/'.join(parts[-2:])
 dir_str = f'{CYAN}{BOLD}{cwd}{R}'
 
-# Model
-model_str = f'{MAG}{model}{R}'
+# Git branch
+try:
+    branch = subprocess.check_output(
+        ['git', '-C', data.get('cwd') or os.getcwd(), 'branch', '--show-current'],
+        stderr=subprocess.DEVNULL
+    ).decode().strip()
+    branch_str = f'{YELLOW}{branch}{R}' if branch else ''
+except:
+    branch_str = ''
 
-# Context used
-cu = ctx_used
+# Time — H:MM AM/PM, no leading zero
+now = datetime.datetime.now()
+time_str = f'{WHITE}{now.strftime(\"%-I:%M %p\")}{R}'
+
+# Context
+ctx = data.get('context_window') or {}
+cu  = ctx.get('used_percentage')
 ctx_str = f'{GRAY}ctx:{R}{used_color(cu)}{BOLD}{fmt_pct(cu)}%{R}'
 
 # Compaction warning (fires at 80%)
@@ -95,28 +86,32 @@ try:
 except:
     compact_str = f'{GRAY}?{R}'
 
-# Time
-now = datetime.datetime.now().strftime('%I:%M:%S %p')
-time_str = f'{WHITE}{now}{R}'
+# 5h rate limit
+rate = data.get('rate_limits') or {}
+w5   = rate.get('five_hour') or {}
+r5p  = w5.get('used_percentage')
+r5_str = f'{GRAY}5h:{R}{used_color(r5p)}{fmt_pct(r5p)}%{R}'
+rst5 = fmt_reset(w5.get('resets_at'))
+if rst5:
+    r5_str += f'  {GRAY}rst {rst5}{R}'
 
-# Rate limits
-r5p = w5.get('used_percentage')
-r7p = w7.get('used_percentage')
-if r5p is not None or r7p is not None:
-    r5 = f'{GRAY}5h:{R}{used_color(r5p)}{fmt_pct(r5p)}%{R}'
-    rst5 = fmt_reset(w5.get('resets_at'))
-    if rst5: r5 += f'{GRAY} rst {rst5}{R}'
+# Terminal width for right-aligning the time
+try:
+    term_width = os.get_terminal_size().columns
+except:
+    term_width = 80
 
-    r7 = f'{GRAY}7d:{R}{used_color(r7p)}{fmt_pct(r7p)}%{R}'
-    rst7 = fmt_reset(w7.get('resets_at'))
-    if rst7: r7 += f'{GRAY} rst {rst7}{R}'
+sep = f'  {GRAY}|{R}  '
 
-    rl_str = r5 + '  ' + r7
-else:
-    rl_str = f'{GRAY}usage:N/A{R}'
+# Line 1: dir  |  branch  [right-aligned]  time
+left_parts = [dir_str] + ([branch_str] if branch_str else [])
+line1_left = sep.join(left_parts)
+padding = max(2, term_width - vlen(line1_left) - vlen(time_str))
+line1 = line1_left + ' ' * padding + time_str
 
-# Cost
-cost_str = f'{GRAY}cost:{R}{YELLOW}{fmt_cost(cost_usd)}{R}'
+# Line 2: ctx  |  compact warn  |  5h usage
+line2 = sep.join([ctx_str, compact_str, r5_str])
 
-print(sep.join([dir_str, model_str, ctx_str, compact_str, time_str, rl_str, cost_str]))
+print(line1)
+print(line2)
 " 2>/dev/null
