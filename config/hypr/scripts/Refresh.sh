@@ -36,9 +36,10 @@ for pid in $(pidof waybar rofi swaync ags swaybg); do
     kill -SIGUSR1 "$pid"
 done
 
-#Restart waybar
+#Restart waybar (per-monitor instances)
 sleep 1
-waybar &
+waybar -c $HOME/.config/waybar/per-monitor/dp2.jsonc &
+waybar -c $HOME/.config/waybar/per-monitor/hdmi.jsonc &
 
 # relaunch swaync
 sleep 0.5
