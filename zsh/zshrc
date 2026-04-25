@@ -1,8 +1,3 @@
-# Auto-start tmux on terminal open
-if command -v tmux &>/dev/null && [ -z "$TMUX" ]; then
-  tmux attach-session -t default 2>/dev/null || tmux new-session -s default
-fi
-
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
@@ -77,8 +72,7 @@ alias ls='eza --icons'
 alias ll='eza -l --icons --git'
 alias la='eza -la --icons --git'
 alias lt='eza --tree --icons'
-alias cat='batcat'
-alias bat='batcat'
+alias cat='bat'
 alias grep='rg'
 alias cd='z'
 alias ci='zi'
@@ -121,9 +115,6 @@ awslogout() {
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-
-# Configure browser (wslview from wslu package)
-export BROWSER=wslview
 
 # Winnifred fullstack dev runner
 alias winnifred='python3 ~/projects/Winnifred/scripts/run-local.py'

@@ -1,52 +1,85 @@
-# dotfiles
+# dotfiles — Arch Linux
 
-Personal dotfiles managed via symlinks.
+Personal dotfiles for Arch-based environments.
 
 ## Setup
 
-Each file in this repo is symlinked to its standard location in `$HOME`:
+Clone the repo and create symlinks:
 
-| Dotfile | Source |
-|---------|--------|
-| `~/.zshrc` | `zsh/zshrc` |
-| `~/.p10k.zsh` | `zsh/p10k.zsh` |
-| `~/.tmux.conf` | `tmux/tmux.conf` |
-| `~/.gitconfig` | `git/gitconfig` |
-| `~/.bashrc` | `bash/bashrc` |
-| `~/.profile` | `bash/profile` |
-| `~/.dircolors` | `shell/dircolors` |
-| `~/.claude/settings.json` | `claude/settings.json` |
-| `~/.claude/statusline.sh` | `claude/statusline.sh` |
+```bash
+git clone https://github.com/JoshuaHayesWasHere/dotfiles.git ~/dotfiles
+git checkout arch
+
+ln -s ~/dotfiles/zsh/zshrc ~/.zshrc
+ln -s ~/dotfiles/zsh/p10k.zsh ~/.p10k.zsh
+ln -s ~/dotfiles/git/gitconfig ~/.gitconfig
+ln -s ~/dotfiles/bash/bashrc ~/.bashrc
+ln -s ~/dotfiles/bash/profile ~/.profile
+ln -s ~/dotfiles/shell/dircolors ~/.dircolors
+mkdir -p ~/.claude
+ln -s ~/dotfiles/claude/settings.json ~/.claude/settings.json
+ln -s ~/dotfiles/claude/statusline.sh ~/.claude/statusline.sh
+```
 
 ---
 
-## Tmux
+## Installation
 
-Prefix: **`Ctrl-a`**
+### 1. Install paru (AUR helper)
 
-### Panes
+```bash
+sudo pacman -S --needed base-devel git
+git clone https://aur.archlinux.org/paru.git /tmp/paru
+cd /tmp/paru && makepkg -si
+```
 
-| Action | Binding |
-|--------|---------|
-| Split right (vertical) | `prefix \|` |
-| Split below (horizontal) | `prefix _` |
-| Navigate left | `prefix h` |
-| Navigate down | `prefix j` |
-| Navigate up | `prefix k` |
-| Navigate right | `prefix l` |
-| Resize left | `prefix H` |
-| Resize down | `prefix J` |
-| Resize up | `prefix K` |
-| Resize right | `prefix L` |
+### 2. Install core tools
 
-### Copy mode (vi)
+```bash
+paru -S zsh ripgrep bat eza zoxide \
+  oh-my-zsh-git \
+  zsh-theme-powerlevel10k-git \
+  zsh-autosuggestions \
+  zsh-syntax-highlighting \
+  ttf-meslo-nerd
+```
 
-| Action | Binding |
-|--------|---------|
-| Enter copy mode | `prefix [` |
-| Begin selection | `v` |
-| Yank selection | `y` |
-| Cancel | `Escape` |
+> On Arch, `bat` is the binary name (not `batcat`). The aliases in `.zshrc` already use `bat`.
+
+### 3. Oh My Zsh (if not using the AUR package)
+
+```bash
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+```
+
+If you installed `oh-my-zsh-git` via paru, symlink the Powerlevel10k theme into the custom themes directory:
+
+```bash
+ln -s /usr/share/zsh-theme-powerlevel10k \
+  ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/themes/powerlevel10k
+```
+
+### 4. NVM (Node Version Manager)
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+```
+
+### 5. Git credentials
+
+Use `gh` (GitHub CLI) or `git-credential-libsecret`:
+
+```bash
+paru -S github-cli
+gh auth login
+gh auth setup-git
+```
+
+### 6. Set zsh as default shell
+
+```bash
+chsh -s $(which zsh)
+```
 
 ---
 
@@ -60,8 +93,7 @@ Prefix: **`Ctrl-a`**
 | `ll` | `eza -l --icons --git` | Long listing with git status |
 | `la` | `eza -la --icons --git` | Long listing including hidden files |
 | `lt` | `eza --tree --icons` | Tree view |
-| `cat` | `batcat` | Syntax-highlighted file viewer |
-| `bat` | `batcat` | Same as above |
+| `cat` | `bat` | Syntax-highlighted file viewer |
 | `grep` | `rg` | Fast search via ripgrep |
 | `cd` | `z` | Smart directory jump via zoxide |
 | `ci` | `zi` | Interactive zoxide directory picker |
@@ -70,7 +102,7 @@ Prefix: **`Ctrl-a`**
 
 | Alias | Command | Description |
 |-------|---------|-------------|
-| `winnifred` | `python3 ~/scripts/runWinnifredFullstack.py` | Start Winnifred fullstack dev environment |
+| `winnifred` | `python3 ~/projects/Winnifred/scripts/run-local.py` | Start Winnifred fullstack dev environment |
 
 ### AWS (SSO)
 
