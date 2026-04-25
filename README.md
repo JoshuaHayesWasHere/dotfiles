@@ -15,6 +15,8 @@ Each file in this repo is symlinked to its standard location in `$HOME`:
 | `~/.bashrc` | `bash/bashrc` |
 | `~/.profile` | `bash/profile` |
 | `~/.dircolors` | `shell/dircolors` |
+| `~/.claude/settings.json` | `claude/settings.json` |
+| `~/.claude/statusline.sh` | `claude/statusline.sh` |
 
 ---
 
