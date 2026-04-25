@@ -1,7 +1,87 @@
 #!/bin/bash
 # /* ---- 💫 https://github.com/JaKooLit 💫 ---- */  ##
-# Searchable, categorized keybinds viewer using rofi
-# Overhauled to group binds by category and show plain-English descriptions.
+# Searchable, categorized keybinds viewer using rofi.
+# Filter switching (Alt+N) uses rofi's script mode so the window stays open
+# and the listview refreshes in place — no relaunch flicker.
+
+# ======================================================================
+# SCRIPT MODE — rofi sets ROFI_RETV when it calls this script back.
+# The script emits the (possibly filtered) listview content + the message
+# header chips on each invocation. ROFI_DATA carries the active filter
+# index across invocations.
+# ======================================================================
+if [[ -n "${ROFI_RETV:-}" ]]; then
+    cache="${KEYBINDS_CACHE:?missing KEYBINDS_CACHE env var}"
+    [[ -f "$cache" ]] || exit 1
+    display=$(cat "$cache")
+
+    mapfile -t cat_array < <(printf '%s\n' "$display" | sed -n 's/^\[\([^]]*\)\].*/\1/p' | sort -u)
+    filters=("All" "${cat_array[@]}")
+
+    hotkey_label=("0" "1" "2" "3" "4" "5" "6" "7" "8" "9" "-" "=")
+    custom_n=(10 1 2 3 4 5 6 7 8 9 11 12)
+
+    nslots=${#filters[@]}
+    (( nslots > ${#hotkey_label[@]} )) && nslots=${#hotkey_label[@]}
+
+    # ROFI_RETV (custom-N exit code = 9+N) → filter index
+    declare -A retv_to_idx
+    for ((i = 0; i < nslots; i++)); do
+        retv_to_idx[$((9 + custom_n[i]))]=$i
+    done
+
+    current_idx="${ROFI_DATA:-0}"
+    case "$ROFI_RETV" in
+        0)   ;;                 # initial call — keep current_idx
+        1|2) exit 1 ;;          # user picked an item → abort modi (closes rofi)
+        *)
+            if [[ -n "${retv_to_idx[$ROFI_RETV]:-}" ]]; then
+                current_idx="${retv_to_idx[$ROFI_RETV]}"
+            fi
+            ;;
+    esac
+
+    # Header chips (compact; long names abbreviated for 1080p widths).
+    mesg=""
+    for ((i = 0; i < nslots; i++)); do
+        case "${filters[$i]}" in
+            "Apps & Launcher") short="Apps" ;;
+            "Media & Audio")   short="Media" ;;
+            "Screenshots")     short="Shots" ;;
+            "Workspaces")      short="Wksp" ;;
+            "Utilities")       short="Util" ;;
+            "Theming")         short="Theme" ;;
+            *)                 short="${filters[$i]}" ;;
+        esac
+        if (( i == current_idx )); then
+            mesg+="<b>●⎇${hotkey_label[$i]} ${short}</b>  "
+        else
+            mesg+="⎇${hotkey_label[$i]} ${short}  "
+        fi
+    done
+
+    # Rofi script protocol headers: \0KEY\x1fVALUE\n
+    # use-hot-keys is required for custom keybindings to call the script
+    # back instead of exiting rofi.
+    printf '\0prompt\x1f%s\n'       "${filters[$current_idx]}"
+    printf '\0message\x1f%s\n'      "$mesg"
+    printf '\0data\x1f%s\n'         "$current_idx"
+    printf '\0no-custom\x1ftrue\n'
+    printf '\0use-hot-keys\x1ftrue\n'
+
+    if (( current_idx == 0 )); then
+        printf '%s\n' "$display"
+    else
+        printf '%s\n' "$display" | grep -F "[${filters[$current_idx]}]"
+    fi
+    exit 0
+fi
+
+# ======================================================================
+# LAUNCHER MODE — invoked by user (e.g. via Hyprland keybind).
+# Parses the bind config files, caches the formatted listview, then
+# starts rofi pointing back at this script as a custom modi.
+# ======================================================================
 
 # kill yad to not interfere with this binds
 pkill yad || true
@@ -244,60 +324,45 @@ if [[ -z "$display" ]]; then
 fi
 
 # Adapt rofi layout to the focused monitor.
-# Lines bumped a bit so the inline filter rows + a few keybinds are visible at once.
+# fixed-height: true keeps the window the same size when a filter shrinks
+# the bind list (otherwise the listview collapses to fit fewer rows).
 focused_width=$(hyprctl monitors -j 2>/dev/null \
     | jq -r 'first(.[] | select(.focused == true) | .width) // empty')
 if [[ "$focused_width" =~ ^[0-9]+$ ]] && (( focused_width >= 2560 )); then
-    layout='listview { columns: 2; lines: 12; }'
+    layout='listview { columns: 2; lines: 10; fixed-height: true; }'
 else
-    layout='listview { columns: 1; lines: 14; }'
+    layout='listview { columns: 1; lines: 6;  fixed-height: true; }'
 fi
 
-# Inline filter rows at the top of the list. Selecting one re-renders the
-# list with that filter applied. Defaults to "All". Esc/Super+q closes.
+# Cache the formatted listview to a temp file so the script-mode
+# invocations (which run as separate processes spawned by rofi) can
+# read it without re-parsing.
+cache=$(mktemp /tmp/keybinds.XXXXXX)
+trap 'rm -f "$cache"' EXIT
+printf '%s\n' "$display" > "$cache"
+export KEYBINDS_CACHE="$cache"
+
+# Hotkey → -kb-custom-N flag wiring.
+#   Alt+0     → custom-10 → All
+#   Alt+1..9  → custom-1..9 → cats 1..9
+#   Alt+minus → custom-11 → cat 10
+#   Alt+equal → custom-12 → cat 11
+hotkey_kb=("Alt+0" "Alt+1" "Alt+2" "Alt+3" "Alt+4" "Alt+5" "Alt+6" "Alt+7" "Alt+8" "Alt+9" "Alt+minus" "Alt+equal")
+custom_n=(10 1 2 3 4 5 6 7 8 9 11 12)
+
 mapfile -t cat_array < <(printf '%s\n' "$display" | sed -n 's/^\[\([^]]*\)\].*/\1/p' | sort -u)
-active_marker="● "
-inactive_marker="  "
-separator="────────  Keybinds  ────────"
-current="All categories"
+nslots=$((${#cat_array[@]} + 1))
+(( nslots > ${#hotkey_kb[@]} )) && nslots=${#hotkey_kb[@]}
 
-while true; do
-    rows=""
-    for opt in "All categories" "${cat_array[@]}"; do
-        if [[ "$opt" == "$current" ]]; then
-            rows+="${active_marker}${opt}"$'\n'
-        else
-            rows+="${inactive_marker}${opt}"$'\n'
-        fi
-    done
-    rows+="$separator"$'\n'
-    if [[ "$current" == "All categories" ]]; then
-        rows+="$display"
-    else
-        rows+=$(printf '%s\n' "$display" | grep -F "[$current]")
-    fi
-
-    selected=$(printf '%s' "$rows" | rofi -dmenu -i -config "$rofi_theme" \
-        -theme-str "$layout" \
-        -kb-cancel "Escape,Super+q" \
-        -p "$current")
-
-    # Cancelled (Esc / Super+q)
-    [[ -z "$selected" ]] && exit 0
-
-    # Ignore separator clicks
-    [[ "$selected" == "$separator" ]] && continue
-
-    # Strip marker prefix to identify filter rows
-    cleaned="${selected#"$active_marker"}"
-    cleaned="${cleaned#"$inactive_marker"}"
-
-    if [[ "$cleaned" == "All categories" ]] \
-       || printf '%s\n' "${cat_array[@]}" | grep -qxF -- "$cleaned"; then
-        current="$cleaned"
-        continue
-    fi
-
-    # Otherwise the user picked a keybind row — close.
-    exit 0
+kb_flags=()
+for ((i = 0; i < nslots; i++)); do
+    kb_flags+=("-kb-custom-${custom_n[$i]}" "${hotkey_kb[$i]}")
 done
+
+# Launch rofi with this script as a custom modi. Rofi keeps the window
+# open and re-invokes the script for selections / custom keybindings.
+rofi -show keybinds -modi "keybinds:$(realpath "$0")" \
+    -config "$rofi_theme" \
+    -theme-str "$layout" \
+    -kb-cancel "Escape,Super+q" \
+    "${kb_flags[@]}"
