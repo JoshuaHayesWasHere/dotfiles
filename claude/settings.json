@@ -1,4 +1,5 @@
 {
+  "theme": "dark",
   "attribution": {
     "commit": "",
     "pr": ""
@@ -16,7 +17,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bash /home/joshh/.claude/statusline.sh",
+    "command": "bash /home/joshua/.claude/statusline.sh",
     "refreshInterval": 1
   },
   "verbose": true,
