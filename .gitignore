@@ -8,3 +8,7 @@ Thumbs.db
 *~
 .idea/
 .vscode/
+
+# Runtime/cache state inside tracked configs
+config/**/*.log
+config/**/*.cache

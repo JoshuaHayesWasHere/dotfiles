@@ -1,3 +1,7 @@
 [user]
 	name = JoshuaHayesWasHere
 	email = josh.hayes121@icloud.com
+[init]
+	defaultBranch = main
+[credential]
+	helper = store
