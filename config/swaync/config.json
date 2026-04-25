@@ -76,10 +76,6 @@
                   "command": "hyprctl dispatch exit"
               },
               {
-                  "label": "󰀝",
-                  "command": "bash -c $HOME/.config/hypr/scripts/AirplaneMode.sh"
-              },
-              {
                   "label": "󰝟",
                   "command": "pactl set-sink-mute @DEFAULT_SINK@ toggle"
               },

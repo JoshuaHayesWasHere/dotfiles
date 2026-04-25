@@ -110,7 +110,7 @@ function categorize(action, args, comment,    s) {
     if (action == "global") return "Apps & Launcher"
     if (action == "exec") {
         if (s ~ /screenshot|swappy|grim|slurp/) return "Screenshots"
-        if (s ~ /volume|mediactrl|playerctl|airplane|togglemic|mic mute/) return "Media & Audio"
+        if (s ~ /volume|mediactrl|playerctl|togglemic|mic mute/) return "Media & Audio"
         if (s ~ /lockscreen|wlogout|hyprctl dispatch exit|systemctl suspend|systemctl poweroff|systemctl reboot/) return "Session"
         if (s ~ /waybar/) return "Waybar"
         if (s ~ /changelayout/) return "Layout"
