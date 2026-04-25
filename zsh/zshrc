@@ -48,6 +48,8 @@ alias la='eza -la --icons --git'
 alias lt='eza --tree --icons'
 alias cat='bat'
 alias grep='rg'
+alias clip='wl-copy'
+dclip() { { print -- "\$ ${(q-)@}"; "$@" 2>&1 } | tee >(wl-copy --primary); return ${pipestatus[1]} }
 
 # fzf (CTRL-R fuzzy history)
 command -v fzf >/dev/null 2>&1 && source <(fzf --zsh)
