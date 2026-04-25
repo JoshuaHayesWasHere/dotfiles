@@ -5,17 +5,18 @@
 // HYPRLAND WORKSPACES. CHOOSE as desired and place on waybar configs
 
 {
-// CIRCLES Style
+// CIRCLES Style — per-monitor: 1-5 on DP-2, 11-15 on HDMI-A-1, both rendered as identical dots
 "hyprland/workspaces": {
 	"active-only": false,
-	"all-outputs": true,
+	"all-outputs": false,
 	"format": "{icon}",
 	"show-special": false,
 	"on-click": "activate",
 	"on-scroll-up": "hyprctl dispatch workspace e+1",
 	"on-scroll-down": "hyprctl dispatch workspace e-1",
-    "persistent-workspaces": {
-      "*": 5
+	"persistent-workspaces": {
+		"DP-2":     [1, 2, 3, 4, 5],
+		"HDMI-A-1": [11, 12, 13, 14, 15]
 	},
 	"format-icons": {
 		"active": "",
