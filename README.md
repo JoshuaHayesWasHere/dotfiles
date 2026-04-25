@@ -63,7 +63,8 @@ paru -S zsh ripgrep bat eza zoxide fzf \
   zsh-autosuggestions \
   zsh-syntax-highlighting \
   ttf-meslo-nerd \
-  fastfetch pokemon-colorscripts-git
+  fastfetch pokemon-colorscripts-git \
+  aws-cli-v2
 ```
 
 ### 3. Oh My Zsh (if not using AUR package)

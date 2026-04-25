@@ -12,3 +12,11 @@ Thumbs.db
 # Runtime/cache state inside tracked configs
 config/**/*.log
 config/**/*.cache
+
+# Secrets — never commit, even if an aws/ dir gets added later
+aws/credentials
+aws/sso/
+aws/cli/
+**/.env
+**/*.pem
+**/*.key
