@@ -27,6 +27,20 @@ vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move down"<CR>')
 -- nvimTree
 vim.keymap.set("n", "<leader>e", ":NvimTreeToggle<CR>", { noremap = true, silent = true })
 
+-- Toggle wrap; while on, j/k navigate by display line
+vim.keymap.set('n', '<leader>w', function()
+  vim.wo.wrap = not vim.wo.wrap
+  if vim.wo.wrap then
+    vim.keymap.set('n', 'j', 'gj')
+    vim.keymap.set('n', 'k', 'gk')
+    print('wrap on (j/k → gj/gk)')
+  else
+    pcall(vim.keymap.del, 'n', 'j')
+    pcall(vim.keymap.del, 'n', 'k')
+    print('wrap off')
+  end
+end, { desc = 'Toggle [W]rap and j/k → gj/gk' })
+
 -- Misc
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>', { desc = 'Clears search highlight' })
 vim.keymap.set(
