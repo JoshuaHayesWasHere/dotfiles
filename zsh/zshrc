@@ -102,6 +102,9 @@ export PATH="$HOME/.local/bin:$PATH"
 # zoxide — must initialize last so its hooks aren't overridden by anything
 # loaded later (NVM, PATH-dependent tools, etc.)
 if command -v zoxide >/dev/null 2>&1; then
+    # Claude Code's shell snapshot doesn't preserve chpwd_functions, so the
+    # doctor false-positives on every cd. Suppress only inside Claude Code.
+    [[ -n $CLAUDECODE ]] && export _ZO_DOCTOR=0
     alias ci='cdi'
     eval "$(zoxide init --cmd cd zsh)"
 fi
