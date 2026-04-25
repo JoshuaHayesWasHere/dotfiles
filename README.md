@@ -1,85 +1,52 @@
 # dotfiles
 
-Personal dotfiles managed via symlinks.
+Personal dotfiles for zsh-based environments. Managed via symlinks.
 
-## Setup
+## Branches
 
-Each file in this repo is symlinked to its standard location in `$HOME`:
+| Branch | Environment |
+|--------|-------------|
+| `wsl-ubuntu` | WSL2 on Windows (Ubuntu-based) |
+| `arch` | Arch Linux (or Arch-based distros) |
 
-| Dotfile | Source |
-|---------|--------|
-| `~/.zshrc` | `zsh/zshrc` |
-| `~/.p10k.zsh` | `zsh/p10k.zsh` |
-| `~/.tmux.conf` | `tmux/tmux.conf` |
-| `~/.gitconfig` | `git/gitconfig` |
-| `~/.bashrc` | `bash/bashrc` |
-| `~/.profile` | `bash/profile` |
-| `~/.dircolors` | `shell/dircolors` |
-| `~/.claude/settings.json` | `claude/settings.json` |
-| `~/.claude/statusline.sh` | `claude/statusline.sh` |
+Clone the repo and check out the branch for your environment:
 
----
+```bash
+git clone https://github.com/JoshuaHayesWasHere/dotfiles.git ~/dotfiles
+cd ~/dotfiles
+git checkout wsl-ubuntu   # or: git checkout arch
+```
 
-## Tmux
-
-Prefix: **`Ctrl-a`**
-
-### Panes
-
-| Action | Binding |
-|--------|---------|
-| Split right (vertical) | `prefix \|` |
-| Split below (horizontal) | `prefix _` |
-| Navigate left | `prefix h` |
-| Navigate down | `prefix j` |
-| Navigate up | `prefix k` |
-| Navigate right | `prefix l` |
-| Resize left | `prefix H` |
-| Resize down | `prefix J` |
-| Resize up | `prefix K` |
-| Resize right | `prefix L` |
-
-### Copy mode (vi)
-
-| Action | Binding |
-|--------|---------|
-| Enter copy mode | `prefix [` |
-| Begin selection | `v` |
-| Yank selection | `y` |
-| Cancel | `Escape` |
+Each branch has its own README with installation instructions and symlink setup.
 
 ---
 
-## Shell Aliases
+## Tools
 
-### Modern CLI replacements
+| Tool | Purpose |
+|------|---------|
+| [zsh](https://www.zsh.org/) | Shell |
+| [oh-my-zsh](https://ohmyz.sh/) | Zsh plugin/theme manager |
+| [Powerlevel10k](https://github.com/romkatv/powerlevel10k) | Prompt theme |
+| [zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions) | Fish-style inline suggestions |
+| [zsh-syntax-highlighting](https://github.com/zsh-users/zsh-syntax-highlighting) | Shell syntax coloring |
+| [eza](https://github.com/eza-community/eza) | Modern `ls` replacement |
+| [bat](https://github.com/sharkdp/bat) | Syntax-highlighted `cat` replacement |
+| [ripgrep](https://github.com/BurntSushi/ripgrep) | Fast `grep` replacement |
+| [zoxide](https://github.com/ajeetdsouza/zoxide) | Smart `cd` replacement |
+| [nvm](https://github.com/nvm-sh/nvm) | Node version manager |
 
-| Alias | Command | Description |
-|-------|---------|-------------|
-| `ls` | `eza --icons` | Directory listing with icons |
-| `ll` | `eza -l --icons --git` | Long listing with git status |
-| `la` | `eza -la --icons --git` | Long listing including hidden files |
-| `lt` | `eza --tree --icons` | Tree view |
-| `cat` | `batcat` | Syntax-highlighted file viewer |
-| `bat` | `batcat` | Same as above |
-| `grep` | `rg` | Fast search via ripgrep |
-| `cd` | `z` | Smart directory jump via zoxide |
-| `ci` | `zi` | Interactive zoxide directory picker |
+---
 
-### Project shortcuts
+## Aliases (same across all branches)
 
-| Alias | Command | Description |
-|-------|---------|-------------|
-| `winnifred` | `python3 ~/scripts/runWinnifredFullstack.py` | Start Winnifred fullstack dev environment |
-
-### AWS (SSO)
-
-| Command | Description |
-|---------|-------------|
-| `awslogin <profile>` | Log in to an SSO profile and export it |
-| `awsdev` | Log in to `sandbox` profile |
-| `awsadmin` | Log in to `admin` profile |
-| `awslrpdev` | Log in to `lrp-sandbox` profile |
-| `awslrpadmin` | Log in to `lrp-admin` profile |
-| `awswho` | Show current caller identity |
-| `awslogout` | Log out of SSO and unset `AWS_PROFILE` |
+| Alias | Replaces | Tool |
+|-------|----------|------|
+| `ls` | `ls` | eza |
+| `ll` | `ls -l` | eza |
+| `la` | `ls -la` | eza |
+| `lt` | `tree` | eza |
+| `cat` | `cat` | bat |
+| `grep` | `grep` | ripgrep |
+| `cd` | `cd` | zoxide |
+| `ci` | — | zoxide interactive |
