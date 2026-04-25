@@ -3,6 +3,12 @@
 //* .............CHRYSANTHEMUM.......................*/
 //* ............................................*/
 //* --- 👍 designed by https://github.com/Krautt  👍 --- */
+//* ----------------------------------------------------- */
+//* Used as the base template for this dotfiles repo;     */
+//* modified to support per-monitor workspaces (1-10 on   */
+//* each output, dynamic gap-fill above the persistent    */
+//* 1-5 set, and three workspace states via CSS).         */
+//* ----------------------------------------------------- */
 
 {
 "include": [

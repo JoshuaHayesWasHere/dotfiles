@@ -41,6 +41,11 @@ tooltip label {
 	padding-left: 4px;
 }
 
+/* Workspace has windows but is not focused — use a brighter neutral */
+#workspaces button:not(.empty) {
+  color: @subtext0;
+}
+
 #taskbar button.active,
 #workspaces button.active {
   color: @maroon;
