@@ -52,7 +52,8 @@
       },
       "mpris": {
           "image-size": 10,
-          "image-radius": 0
+          "image-radius": 0,
+          "blacklist": ["playerctld"]
       },
       "volume": {
           "label": "󰕾"
