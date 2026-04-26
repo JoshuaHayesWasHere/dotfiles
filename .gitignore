@@ -12,6 +12,7 @@ Thumbs.db
 # Runtime/cache state inside tracked configs
 config/**/*.log
 config/**/*.cache
+config/nvim/undodir/
 
 # Secrets — never commit, even if an aws/ dir gets added later
 aws/credentials
