@@ -94,9 +94,9 @@ gh auth setup-git
 chsh -s $(which zsh)
 ```
 
-### 7. Keyboard remap (CapsLock ↔ Super)
+### 7. Keyboard remap (CapsLock as Super)
 
-Swaps CapsLock and the left Super/Win key system-wide via [keyd](https://github.com/rvaiya/keyd).
+Maps Caps Lock to Super (the Win/Cmd key remains Super), and toggles real Caps Lock when both Shift keys are pressed together. System-wide via [keyd](https://github.com/rvaiya/keyd).
 
 ```bash
 sudo pacman -S keyd
