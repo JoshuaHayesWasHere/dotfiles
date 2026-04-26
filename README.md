@@ -9,6 +9,7 @@ bash/        bashrc, bash_profile
 claude/      Claude Code settings + statusline
 config/      Snapshot of ~/.config (Hyprland, waybar, kitty, nvim, etc.)
 git/         gitconfig
+keyd/        keyd remap config (symlinked to /etc/keyd/)
 shell/       dircolors
 zsh/         zshrc
 ```
@@ -93,6 +94,18 @@ gh auth setup-git
 chsh -s $(which zsh)
 ```
 
+### 7. Keyboard remap (CapsLock ↔ Super)
+
+Swaps CapsLock and the left Super/Win key system-wide via [keyd](https://github.com/rvaiya/keyd).
+
+```bash
+sudo pacman -S keyd
+sudo ln -sf ~/dotfiles/keyd/default.conf /etc/keyd/default.conf
+sudo systemctl enable --now keyd
+```
+
+Reload after editing the config: `sudo keyd reload`. Disable temporarily: `sudo systemctl stop keyd`.
+
 ---
 
 ## Shell aliases
@@ -109,6 +122,13 @@ chsh -s $(which zsh)
 | `grep`| `rg` | Fast search via ripgrep |
 | `cd`  | zoxide via `--cmd cd` | Standard `cd`, plus frecency fallback (`cd projectname`) |
 | `ci`  | `cdi` | Interactive zoxide directory picker |
+
+### Clipboard (Wayland)
+
+| Command | Description |
+|---------|-------------|
+| `clip`  | Pipe stdin to the clipboard (`wl-copy`) |
+| `dclip <cmd>` | Run `<cmd>`, print it and its output to the terminal, and copy both to the primary selection |
 
 ### Project shortcuts
 
