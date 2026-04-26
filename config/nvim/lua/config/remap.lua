@@ -7,6 +7,7 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Show diagn
 vim.keymap.set('n', '<leader>d', function()
   vim.diagnostic.open_float(nil, { focusable = true })
 end, { desc = 'Show line [D]iagnostics' })
+vim.keymap.set({ 'n', 'v' }, '<leader>ca', vim.lsp.buf.code_action, { desc = '[C]ode [A]ction' })
 
 --Buffer navigation
 vim.keymap.set('n', '<Tab>', ':bn<CR>', { desc = 'Switches to next buffer' })
@@ -27,19 +28,27 @@ vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move down"<CR>')
 -- nvimTree
 vim.keymap.set("n", "<leader>e", ":NvimTreeToggle<CR>", { noremap = true, silent = true })
 
--- Toggle wrap; while on, j/k navigate by display line
+-- Toggle writing mode: wrap + word-boundary breaks + side padding.
+-- While on, j/k navigate by display line.
 vim.keymap.set('n', '<leader>w', function()
   vim.wo.wrap = not vim.wo.wrap
+  vim.wo.linebreak = vim.wo.wrap
+  vim.wo.breakindent = vim.wo.wrap
+  vim.wo.spell = vim.wo.wrap
+  vim.bo.spelllang = 'en_us'
+  vim.cmd('NoNeckPain')
   if vim.wo.wrap then
-    vim.keymap.set('n', 'j', 'gj')
-    vim.keymap.set('n', 'k', 'gk')
-    print('wrap on (j/k → gj/gk)')
+    vim.keymap.set({ 'n', 'x' }, 'j', 'gj')
+    vim.keymap.set({ 'n', 'x' }, 'k', 'gk')
+    print('writing mode on (wrap + linebreak + spell + padding)')
   else
-    pcall(vim.keymap.del, 'n', 'j')
-    pcall(vim.keymap.del, 'n', 'k')
-    print('wrap off')
+    for _, m in ipairs({ 'n', 'x' }) do
+      pcall(vim.keymap.del, m, 'j')
+      pcall(vim.keymap.del, m, 'k')
+    end
+    print('writing mode off')
   end
-end, { desc = 'Toggle [W]rap and j/k → gj/gk' })
+end, { desc = 'Toggle [W]riting mode (wrap + spell + padding)' })
 
 -- Misc
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>', { desc = 'Clears search highlight' })

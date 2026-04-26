@@ -12,6 +12,21 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
+-- Rebuild spell .spl when the .add file is modified externally (e.g. by harper-ls
+-- "Add to dictionary" action). Without this, native spell keeps using the stale
+-- binary and underlines words harper has already accepted.
+vim.api.nvim_create_autocmd({ 'BufEnter', 'FocusGained' }, {
+  desc = 'Rebuild spellfile if .add is newer than .spl',
+  group = vim.api.nvim_create_augroup('spellfile-rebuild', { clear = true }),
+  callback = function()
+    local add = vim.fn.stdpath('data') .. '/site/spell/en.utf-8.add'
+    if vim.fn.filereadable(add) == 0 then return end
+    if vim.fn.getftime(add) > vim.fn.getftime(add .. '.spl') then
+      vim.cmd('silent! mkspell! ' .. vim.fn.fnameescape(add))
+    end
+  end,
+})
+
 -- Rounded floating windows
 vim.diagnostic.config({
   float = {
