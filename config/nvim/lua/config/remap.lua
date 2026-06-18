@@ -28,6 +28,17 @@ vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move down"<CR>')
 -- nvimTree
 vim.keymap.set("n", "<leader>e", ":NvimTreeToggle<CR>", { noremap = true, silent = true })
 
+-- zg: add word to spellfile AND kick harper-ls so its diagnostics refresh
+-- without waiting for an edit / buffer reload. Native zg rebuilds the .spl
+-- so vim-spell clears immediately; harper needs a re-attach to re-lint.
+vim.keymap.set('n', 'zg', function()
+  vim.cmd('normal! zg')
+  for _, c in ipairs(vim.lsp.get_clients({ name = 'harper_ls', bufnr = 0 })) do
+    c:stop()
+  end
+  vim.defer_fn(function() vim.cmd('doautocmd FileType') end, 100)
+end, { desc = 'Add word to spellfile and refresh harper-ls' })
+
 -- Toggle writing mode: wrap + word-boundary breaks + side padding.
 -- While on, j/k navigate by display line.
 vim.keymap.set('n', '<leader>w', function()
@@ -38,6 +49,10 @@ vim.keymap.set('n', '<leader>w', function()
   vim.bo.spelllang = 'en_us'
   vim.cmd('NoNeckPain')
   if vim.wo.wrap then
+    local target = math.max(80, math.floor(vim.o.columns * 0.85))
+    vim.defer_fn(function()
+      pcall(vim.cmd, 'NoNeckPainResize ' .. target)
+    end, 50)
     vim.keymap.set({ 'n', 'x' }, 'j', 'gj')
     vim.keymap.set({ 'n', 'x' }, 'k', 'gk')
     print('writing mode on (wrap + linebreak + spell + padding)')
