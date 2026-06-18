@@ -29,6 +29,10 @@ ln -sf ~/dotfiles/bash/bash_profile  ~/.bash_profile
 ln -sf ~/dotfiles/git/gitconfig      ~/.gitconfig
 ln -sf ~/dotfiles/shell/dircolors    ~/.dircolors
 
+# Starship prompt
+mkdir -p ~/.config
+ln -sf ~/dotfiles/starship/starship.toml ~/.config/starship.toml
+
 # Claude Code
 mkdir -p ~/.claude
 ln -sf ~/dotfiles/claude/settings.json  ~/.claude/settings.json
@@ -48,18 +52,18 @@ ln -sf ~/dotfiles/config/user-dirs.locale ~/.config/user-dirs.locale
 
 ## Installation
 
-### 1. Install paru (AUR helper)
+### 1. Install yay (AUR helper)
 
 ```bash
 sudo pacman -S --needed base-devel git
-git clone https://aur.archlinux.org/paru.git /tmp/paru
-cd /tmp/paru && makepkg -si
+git clone https://aur.archlinux.org/yay.git /tmp/yay
+cd /tmp/yay && makepkg -si
 ```
 
 ### 2. Install core CLI tools
 
 ```bash
-paru -S zsh ripgrep bat eza zoxide fzf \
+yay -S zsh ripgrep bat eza zoxide fzf starship \
   oh-my-zsh-git \
   zsh-autosuggestions \
   zsh-syntax-highlighting \
@@ -83,7 +87,7 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
 ### 5. Git credentials
 
 ```bash
-paru -S github-cli
+yay -S github-cli
 gh auth login
 gh auth setup-git
 ```
@@ -135,6 +139,7 @@ Reload after editing the config: `sudo keyd reload`. Disable temporarily: `sudo 
 | Alias | Command |
 |-------|---------|
 | `winnifred` | `python3 ~/repos/Winnifred/scripts/run-local.py` |
+| `cl` | `claude` (launch Claude Code) |
 
 ### AWS (SSO)
 
