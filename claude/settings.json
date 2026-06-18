@@ -1,17 +1,22 @@
 {
-  "theme": "dark",
+  "env": {
+    "_ZO_DOCTOR": "0"
+  },
   "attribution": {
     "commit": "",
     "pr": ""
   },
   "permissions": {
     "allow": [
-      "Bash(python3:*)",
-      "Bash(source venv/bin/activate)",
-      "Bash(pip install:*)",
-      "Bash(ls:*)",
-      "Bash(git log:*)",
-      "Bash(venv/bin/python:*)"
+      "Bash(hyprctl -j *)",
+      "Bash(hyprctl monitors *)",
+      "Bash(hyprctl monitors)",
+      "Bash(hyprctl configerrors)",
+      "Bash(pacman -Q*)",
+      "Bash(lsblk *)",
+      "Bash(lsblk)",
+      "Bash(fc-list *)",
+      "Bash(unzip -l *)"
     ],
     "defaultMode": "plan"
   },
@@ -20,6 +25,8 @@
     "command": "bash /home/joshua/.claude/statusline.sh",
     "refreshInterval": 1
   },
+  "theme": "dark",
   "verbose": true,
-  "agentPushNotifEnabled": true
+  "agentPushNotifEnabled": true,
+  "skipAutoPermissionPrompt": true
 }
