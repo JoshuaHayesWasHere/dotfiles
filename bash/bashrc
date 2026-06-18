@@ -1,0 +1,16 @@
+#
+# ~/.bashrc
+#
+
+# If not running interactively, don't do anything
+[[ $- != *i* ]] && return
+
+export CLICOLOR=1
+alias ls='ls -G'
+alias grep='grep --color=auto'
+PS1='[\u@\h \W]\$ '
+
+# Starship prompt (overrides PS1 above when installed)
+command -v starship >/dev/null 2>&1 && eval "$(starship init bash)"
+
+export PATH=$PATH:/Users/josh/.rbenv/versions/3.1.2/lib/ruby/gems/3.1.0

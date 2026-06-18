@@ -1,0 +1,24 @@
+{
+  "env": {
+    "_ZO_DOCTOR": "0"
+  },
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "permissions": {
+    "allow": [
+      "Bash(fc-list *)",
+      "Bash(unzip -l *)"
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash /Users/josh/.claude/statusline.sh",
+    "refreshInterval": 1
+  },
+  "theme": "dark",
+  "verbose": true,
+  "agentPushNotifEnabled": true,
+  "skipAutoPermissionPrompt": true
+}
