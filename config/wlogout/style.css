@@ -79,10 +79,3 @@ button span {
 #reboot:hover {
     background-image: image(url("./icons/restart-hover.png"));
 }
-
-#hibernate {
-    background-image: image(url("./icons/hibernate.png"));
-}
-#hibernate:hover {
-    background-image: image(url("./icons/hibernate-hover.png"));
-}
