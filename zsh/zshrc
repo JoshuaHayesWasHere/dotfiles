@@ -29,8 +29,7 @@ source $ZSH/oh-my-zsh.sh
 # Starship prompt (replaces OMZ theme; keeps plugins)
 command -v starship >/dev/null 2>&1 && eval "$(starship init zsh)"
 
-# History
-HISTFILE=~/.zsh_history
+# History — HISTFILE is set in ~/.zshenv (XDG state dir)
 HISTSIZE=10000
 SAVEHIST=10000
 setopt HIST_IGNORE_DUPS

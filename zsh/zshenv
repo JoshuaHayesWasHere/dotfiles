@@ -4,8 +4,13 @@
 # Auto-dedupe path-like arrays (replaces the old awk de-dupe hack in .zshrc)
 typeset -U path PATH fpath FPATH
 
-# Keep tool state out of ~ (XDG data dir)
+# Keep tool state out of ~ (XDG data/state dirs)
 export GOPATH="${XDG_DATA_HOME:-$HOME/.local/share}/go"
+
+# zsh history — set here (not zshrc) so no shell can recreate ~/.zsh_history.
+# Only interactive shells actually write it: SAVEHIST is set in ~/.zshrc.
+HISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/zsh/history"
+[ -d "${HISTFILE:h}" ] || mkdir -p "${HISTFILE:h}"
 
 # node — put nvm's newest installed version on PATH without sourcing nvm.sh,
 # so scripts and agent shells get node/npm/npx with zero startup cost.
