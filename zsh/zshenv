@@ -6,8 +6,6 @@ typeset -U path PATH fpath FPATH
 
 # Keep tool state out of ~ (XDG data dir)
 export GOPATH="${XDG_DATA_HOME:-$HOME/.local/share}/go"
-export CARGO_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/cargo"
-export RUSTUP_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/rustup"
 
 # node — put nvm's newest installed version on PATH without sourcing nvm.sh,
 # so scripts and agent shells get node/npm/npx with zero startup cost.
@@ -18,7 +16,6 @@ _node_bin=("$NVM_DIR"/versions/node/*/bin(Nn[-1]))
 # PATH — later entries here take precedence (prepended)
 path=(
     "$GOPATH/bin"
-    "$CARGO_HOME/bin"
     "$HOME/.local/bin"
     $_node_bin
     $path
