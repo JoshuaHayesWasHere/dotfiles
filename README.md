@@ -9,10 +9,32 @@ bash/        bashrc, bash_profile
 claude/      Claude Code settings, statusline, global CLAUDE.md
 config/      ~/.config subtrees (Hyprland, waybar, kitty, nvim, etc.)
 git/         gitconfig, global ignore
+gtk/         gtkrc-2.0 (GTK2; GTK3/4 live under config/)
 keyd/        keyd remap config (symlinked to /etc/keyd/)
 shell/       dircolors
-zsh/         zshenv (env + PATH + functions.zsh), zshrc (interactive), functions.zsh (portable helpers)
+zsh/         zshenv (env + PATH), zshrc (interactive only), functions.zsh (portable helpers)
 ```
+
+### How the zsh files split
+
+Three files, loaded in different circumstances — this split is deliberate:
+
+| File | Loads for | Holds |
+|------|-----------|-------|
+| `zsh/zshenv` | **every** zsh: login, scripts, agent/automation shells | `GOPATH`, `NVM_DIR`, `HISTFILE`, `PATH`, then sources `functions.zsh` |
+| `zsh/functions.zsh` | **every** zsh (via zshenv) | `awslogin` & friends, `clip`/`dclip`, `winnifred` |
+| `zsh/zshrc` | **interactive human shells only** | Oh My Zsh + plugins, Starship, `nvm.sh`, zoxide, greeting, the eza/bat/rg aliases |
+
+`zshrc` returns early when `$CLAUDECODE` or `$AI_AGENT` is set. Claude Code snapshots
+the shell before every command it runs, and inheriting the full interactive
+environment meant coreutils were shadowed by tools with incompatible flags
+(`ls` → `eza`, `cat` → `bat`) and `cd` was rerouted through zoxide's frecency
+matching. Agent shells now start in ~1 ms with 2 aliases instead of ~225 ms with
+275, while `eza`/`bat`/`rg`/`fd`/`jq`/`node`/`uv` remain on `PATH` under their
+real names.
+
+Put env and `PATH` in `zshenv`, anything portable in `functions.zsh`, and only
+interactive weight in `zshrc`.
 
 ## Setup
 
@@ -31,6 +53,7 @@ ln -sf ~/dotfiles/bash/bash_profile  ~/.bash_profile
 ln -sf ~/dotfiles/git/config         ~/.config/git/config
 ln -sf ~/dotfiles/git/ignore         ~/.config/git/ignore
 ln -sf ~/dotfiles/shell/dircolors    ~/.dircolors
+ln -sf ~/dotfiles/gtk/gtkrc-2.0      ~/.gtkrc-2.0
 
 # Starship prompt
 mkdir -p ~/.config
@@ -46,7 +69,7 @@ ln -sf ~/dotfiles/claude/CLAUDE.md      ~/.claude/CLAUDE.md
 mkdir -p ~/.config
 for d in hypr waybar rofi wlogout swaync swappy wallust kitty nvim btop cava \
          fastfetch qalculate Kvantum qt5ct qt6ct gtk-3.0 gtk-4.0 nwg-look \
-         nwg-displays xsettingsd Thunar quickshell; do
+         nwg-displays xsettingsd Thunar quickshell fontconfig htop OpenRGB; do
   ln -sfn ~/dotfiles/config/$d ~/.config/$d
 done
 ln -sf ~/dotfiles/config/mimeapps.list    ~/.config/mimeapps.list
@@ -67,14 +90,24 @@ cd /tmp/yay && makepkg -si
 ### 2. Install core CLI tools
 
 ```bash
-yay -S zsh ripgrep bat eza zoxide fzf starship \
+yay -S zsh ripgrep bat eza fd zoxide fzf starship jq uv \
   oh-my-zsh-git \
   zsh-autosuggestions \
   zsh-syntax-highlighting \
   ttf-meslo-nerd \
   fastfetch pokemon-colorscripts-git \
+  wl-clipboard \
   aws-cli-v2
 ```
+
+`jq` and `uv` are not optional: 27 tracked files shell out to `jq` (including
+`hypr/scripts/WorkspaceOnMonitor.sh`), and `winnifred` runs via `uv`.
+
+**The desktop stack is assumed, not installed here.** Hyprland itself plus
+`waybar`, `rofi`, `swaync`, `awww`, `grim`, `slurp`, `playerctl`, `pamixer`,
+`brightnessctl`, `cliphist` and friends come from
+[JaKooLit's KooL Dots](https://github.com/JaKooLit/Hyprland-Dots) installer —
+run that first, then lay these dotfiles over the top.
 
 ### 3. Oh My Zsh (if not using AUR package)
 
@@ -120,6 +153,9 @@ Reload after editing the config: `sudo keyd reload`. Disable temporarily: `sudo 
 
 ### Modern CLI replacements
 
+Interactive shells only — see [How the zsh files split](#how-the-zsh-files-split).
+Agent shells get plain coreutils and call `eza`/`bat`/`rg` by name.
+
 | Alias | Command | Description |
 |-------|---------|-------------|
 | `ls`  | `eza --icons` | Directory listing with icons |
@@ -140,10 +176,26 @@ Reload after editing the config: `sudo keyd reload`. Disable temporarily: `sudo 
 
 ### Project shortcuts
 
-| Alias | Command |
-|-------|---------|
-| `winnifred` | `python3 ~/repos/Winnifred/scripts/run-local.py` |
+| Command | Runs |
+|---------|------|
+| `winnifred` | `uv run ~/repos/Winnifred/scripts/run-local.py` (function — args pass through) |
+| `aa` | `uv run --project ~/desk/archaholics-anonymous aa` — stays an alias while the project is built in `~/desk`; on graduation it moves to `~/repos/`, gets `uv tool install --editable`, and the alias is dropped |
 | `cl` | `claude` (launch Claude Code) |
+| `claude` | Shell function, not the bare binary: launched from a bare `$HOME` it runs the session in `~/desk` (a persistently-trusted workspace, since `$HOME` itself cannot hold trust). Anywhere else it behaves exactly like `claude`. |
+
+### System (dual-boot)
+
+Defined in `zshrc`, not `functions.zsh`, on purpose: both need a TTY to prompt,
+and agent shells have no business holding a one-word reboot command.
+
+| Command | Description |
+|---------|-------------|
+| `windows` | Reboot into Windows **once**. Sets a UEFI one-shot entry the firmware consumes and clears itself, so `BootOrder` is never touched. Looks the entry up by name — Windows updates and NVRAM resets renumber `BootXXXX`. |
+| `bios` | Reboot straight into BIOS setup, bypassing Fast Boot's ~1s keyboard window. |
+
+Both run `sudo -k` first to drop any cached credential, so a recent unrelated
+`sudo` can never let a stray keystroke reboot the machine; the confirmation is
+folded into that password prompt.
 
 ### AWS (SSO)
 
@@ -156,3 +208,18 @@ Reload after editing the config: `sudo keyd reload`. Disable temporarily: `sudo 
 | `awslrpadmin`| Log in to `lrp-admin` |
 | `awswho`     | Show current caller identity |
 | `awslogout`  | Log out of SSO and unset `AWS_PROFILE` |
+
+---
+
+## Wallpaper
+
+`config/hypr/wallpaper_effects/.wallpaper_current` and `.wallpaper_modified` are
+**runtime state, not config** — they are the live wallpaper bitmaps, rewritten
+(megabytes at a time) on every wallpaper change, so they are gitignored.
+
+Eight tracked files read `.wallpaper_current` (hyprlock, the SDDM wallpaper
+script, `RestoreWallpaper.sh`, the wallust theming scripts). On a fresh clone it
+does not exist yet, so **pick a wallpaper on first login** with the KooL Dots
+wallpaper picker (`hypr/UserScripts/WallpaperSelect.sh`); everything downstream
+regenerates from it. `RestoreWallpaper.sh` exits cleanly when the file is
+missing, so nothing breaks in the meantime — the desktop just comes up bare.
