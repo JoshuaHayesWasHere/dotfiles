@@ -11,6 +11,7 @@ config/      ~/.config subtrees (Hyprland, waybar, kitty, nvim, etc.)
 git/         gitconfig, global ignore
 gtk/         gtkrc-2.0 (GTK2; GTK3/4 live under config/)
 keyd/        keyd remap config (symlinked to /etc/keyd/)
+openrgb/     RGB profile (symlinked to /etc/openrgb/)
 shell/       dircolors
 zsh/         zshenv (env + PATH), zshrc (interactive only), functions.zsh (portable helpers)
 ```
@@ -69,7 +70,7 @@ ln -sf ~/dotfiles/claude/CLAUDE.md      ~/.claude/CLAUDE.md
 mkdir -p ~/.config
 for d in hypr waybar rofi wlogout swaync swappy wallust kitty nvim btop cava \
          fastfetch qalculate Kvantum qt5ct qt6ct gtk-3.0 gtk-4.0 nwg-look \
-         nwg-displays xsettingsd Thunar quickshell fontconfig htop OpenRGB; do
+         nwg-displays xsettingsd Thunar quickshell fontconfig htop; do
   ln -sfn ~/dotfiles/config/$d ~/.config/$d
 done
 ln -sf ~/dotfiles/config/mimeapps.list    ~/.config/mimeapps.list
@@ -147,6 +148,34 @@ sudo systemctl enable --now keyd
 
 Reload after editing the config: `sudo keyd reload`. Disable temporarily: `sudo systemctl stop keyd`.
 
+### 8. RGB lighting (OpenRGB)
+
+The daemon runs as `openrgb --server --config /etc/openrgb --profile default`, so
+the profile that matters lives in **`/etc/openrgb/`**, not `~/.config/OpenRGB`
+(that one is only the GUI's scratch directory and is deliberately untracked).
+
+```bash
+yay -S openrgb
+sudo ln -sfn ~/dotfiles/openrgb/default.orp /etc/openrgb/default.orp
+```
+
+**Watch for drift.** Unlike keyd, OpenRGB rewrites its own config files when you
+save a profile, and it replaces rather than edits in place — which can clobber
+the symlink and leave `/etc/openrgb/default.orp` as a regular file while the repo
+copy silently goes stale. After saving a profile in the GUI, check it:
+
+```bash
+ls -l /etc/openrgb/default.orp     # want: -> ~/dotfiles/openrgb/default.orp
+```
+
+If it came back as a regular file, fold the change in and relink:
+
+```bash
+sudo cp /etc/openrgb/default.orp ~/dotfiles/openrgb/default.orp
+sudo chown $USER:$USER ~/dotfiles/openrgb/default.orp
+sudo ln -sfn ~/dotfiles/openrgb/default.orp /etc/openrgb/default.orp
+```
+
 ---
 
 ## Shell aliases
@@ -179,7 +208,7 @@ Agent shells get plain coreutils and call `eza`/`bat`/`rg` by name.
 | Command | Runs |
 |---------|------|
 | `winnifred` | `uv run ~/repos/Winnifred/scripts/run-local.py` (function — args pass through) |
-| `aa` | `uv run --project ~/desk/archaholics-anonymous aa` — stays an alias while the project is built in `~/desk`; on graduation it moves to `~/repos/`, gets `uv tool install --editable`, and the alias is dropped |
+| `aa` | `uv run --project ~/repos/archaholics-anonymous aa` — an alias until the tool has earned a spot on `PATH`; graduating means `uv tool install --editable` (shim into `~/.local/bin`) and dropping the alias |
 | `cl` | `claude` (launch Claude Code) |
 | `claude` | Shell function, not the bare binary: launched from a bare `$HOME` it runs the session in `~/desk` (a persistently-trusted workspace, since `$HOME` itself cannot hold trust). Anywhere else it behaves exactly like `claude`. |
 

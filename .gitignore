@@ -21,11 +21,6 @@ config/kitty/*.bak
 config/hypr/wallpaper_effects/.wallpaper_current
 config/hypr/wallpaper_effects/.wallpaper_modified
 
-# OpenRGB: default.orp is the RGB profile and IS tracked. OpenRGB.json is
-# ~76 KB of auto-generated device-detector enumeration plus churny state.
-config/OpenRGB/OpenRGB.json
-config/OpenRGB/logs/
-
 # Secrets — never commit, even if an aws/ dir gets added later
 aws/credentials
 aws/sso/
