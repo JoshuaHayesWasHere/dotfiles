@@ -3,6 +3,10 @@
 # monitor, dispatch the requested action, and adjust the visible-dot
 # watermark on each monitor.
 #
+# Each monitor owns a contiguous block of 10 workspaces (see OFFSETS below and
+# workspaces.conf). Local index N on a monitor maps to global (offset + N), so
+# SUPER+2 always means "the 2nd workspace of whatever monitor is focused".
+#
 # Per-monitor watermark = max(5, highest local index with windows, active local idx).
 # Slots 6..10 above the watermark must be depersisted so empty ones disappear.
 # Hyprland's `keyword persistent:false` cannot un-persist an already-persistent
@@ -16,12 +20,20 @@ set -euo pipefail
 action="$1"
 idx="$2"
 
+# Monitor -> base offset. Each monitor owns [offset+1 .. offset+10].
+declare -A OFFSETS=(
+  [DP-2]=0    # workspaces 1-10
+  [DP-3]=10   # workspaces 11-20
+  [DP-1]=20   # workspaces 21-30
+)
+
 monitor=$(hyprctl -j activeworkspace | jq -r '.monitor')
 
-case "$monitor" in
-  HDMI-A-1) offset=10 ;;
-  *)        offset=0 ;;
-esac
+if [[ -z "${OFFSETS[$monitor]+x}" ]]; then
+    echo "no workspace block defined for monitor: $monitor" >&2
+    exit 1
+fi
+offset=${OFFSETS[$monitor]}
 
 ws=$((offset + idx))
 
@@ -71,22 +83,20 @@ for ((i = this_water + 1; i <= 10; i++)); do
 done
 
 if (( need_shrink )); then
-    # Compute the OTHER monitor's watermark before reload so we can preserve it.
-    if [[ "$monitor" == "DP-2" ]]; then
-        other="HDMI-A-1"; other_offset=10
-    else
-        other="DP-2";     other_offset=0
-    fi
-    other_water=$(desired_watermark "$other" "$other_offset")
+    # Snapshot every monitor's desired watermark BEFORE reload so we can
+    # re-apply on-demand slots (6..water) for all of them, not just this one.
+    declare -A WATER=()
+    for mon in "${!OFFSETS[@]}"; do
+        WATER[$mon]=$(desired_watermark "$mon" "${OFFSETS[$mon]}")
+    done
 
     hyprctl reload >/dev/null
 
-    for ((i = 6; i <= this_water; i++)); do
-        g=$((offset + i))
-        hyprctl keyword workspace "$g,monitor:$monitor,persistent:true" >/dev/null
-    done
-    for ((i = 6; i <= other_water; i++)); do
-        g=$((other_offset + i))
-        hyprctl keyword workspace "$g,monitor:$other,persistent:true" >/dev/null
+    for mon in "${!OFFSETS[@]}"; do
+        mon_offset=${OFFSETS[$mon]}
+        for ((i = 6; i <= ${WATER[$mon]}; i++)); do
+            g=$((mon_offset + i))
+            hyprctl keyword workspace "$g,monitor:$mon,persistent:true" >/dev/null
+        done
     done
 fi
