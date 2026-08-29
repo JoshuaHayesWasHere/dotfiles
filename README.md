@@ -7,11 +7,11 @@ Personal dotfiles for Arch + Hyprland. Built on top of [JaKooLit's KooL Dots](ht
 ```
 bash/        bashrc, bash_profile
 claude/      Claude Code settings + statusline
-config/      Snapshot of ~/.config (Hyprland, waybar, kitty, nvim, etc.)
-git/         gitconfig
+config/      ~/.config subtrees (Hyprland, waybar, kitty, nvim, etc.)
+git/         gitconfig, global ignore
 keyd/        keyd remap config (symlinked to /etc/keyd/)
 shell/       dircolors
-zsh/         zshrc
+zsh/         zshenv (env + PATH), zshrc (interactive)
 ```
 
 ## Setup
@@ -23,10 +23,13 @@ git clone https://github.com/JoshuaHayesWasHere/dotfiles.git ~/dotfiles
 cd ~/dotfiles && git checkout arch
 
 # Shell + git
+ln -sf ~/dotfiles/zsh/zshenv         ~/.zshenv
 ln -sf ~/dotfiles/zsh/zshrc          ~/.zshrc
 ln -sf ~/dotfiles/bash/bashrc        ~/.bashrc
 ln -sf ~/dotfiles/bash/bash_profile  ~/.bash_profile
 ln -sf ~/dotfiles/git/gitconfig      ~/.gitconfig
+mkdir -p ~/.config/git
+ln -sf ~/dotfiles/git/ignore         ~/.config/git/ignore
 ln -sf ~/dotfiles/shell/dircolors    ~/.dircolors
 
 # Starship prompt

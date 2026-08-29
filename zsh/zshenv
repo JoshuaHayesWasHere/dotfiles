@@ -1,0 +1,16 @@
+# ~/.zshenv — environment for ALL zsh shells (login, interactive, scripts,
+# systemd user services). Interactive-only config lives in ~/.zshrc.
+
+# Auto-dedupe path-like arrays (replaces the old awk de-dupe hack in .zshrc)
+typeset -U path PATH fpath FPATH
+
+# Go — keep GOPATH out of ~ (XDG data dir)
+export GOPATH="${XDG_DATA_HOME:-$HOME/.local/share}/go"
+
+# PATH — later entries here take precedence (prepended)
+path=(
+    "$GOPATH/bin"
+    "$HOME/.local/bin"
+    $path
+)
+export PATH
