@@ -23,12 +23,12 @@ git clone https://github.com/JoshuaHayesWasHere/dotfiles.git ~/dotfiles
 cd ~/dotfiles && git checkout arch
 
 # Shell + git
+mkdir -p ~/.config/git
 ln -sf ~/dotfiles/zsh/zshenv         ~/.zshenv
 ln -sf ~/dotfiles/zsh/zshrc          ~/.zshrc
 ln -sf ~/dotfiles/bash/bashrc        ~/.bashrc
 ln -sf ~/dotfiles/bash/bash_profile  ~/.bash_profile
-ln -sf ~/dotfiles/git/gitconfig      ~/.gitconfig
-mkdir -p ~/.config/git
+ln -sf ~/dotfiles/git/config         ~/.config/git/config
 ln -sf ~/dotfiles/git/ignore         ~/.config/git/ignore
 ln -sf ~/dotfiles/shell/dircolors    ~/.dircolors
 

@@ -1,6 +1,13 @@
 # ~/.zshrc — Arch + Hyprland (KooL Dots base, customized)
 # Environment + PATH live in ~/.zshenv (loaded for every shell).
 
+# Automated / agent shells: Claude Code captures this file into the shell
+# snapshot it sources before every command. Gate the human-facing bits on
+# this so those shells get a clean environment — coreutils not shadowed by
+# eza/bat, `cd` not rerouted through zoxide, no greeting. PATH still comes
+# from ~/.zshenv, so eza/bat/rg/fd stay reachable by their real names.
+[[ -n "$CLAUDECODE$AI_AGENT" ]] && _agent_shell=1
+
 # Oh My Zsh
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME=""   # prompt handled by Starship (see below)
@@ -42,22 +49,26 @@ bindkey '^[[B' history-search-forward
 
 # Pokemon-colorscripts + fastfetch greeting
 # https://gitlab.com/phoneybadger/pokemon-colorscripts
-if command -v pokemon-colorscripts >/dev/null 2>&1 && command -v fastfetch >/dev/null 2>&1; then
+if [[ -z "$_agent_shell" ]] && command -v pokemon-colorscripts >/dev/null 2>&1 && command -v fastfetch >/dev/null 2>&1; then
     pokemon-colorscripts --no-title -s -r | fastfetch -c $HOME/.config/fastfetch/config-pokemon.jsonc --logo-type file-raw --logo-height 10 --logo-width 5 --logo -
 fi
 
-# Modern CLI replacements
-alias ls='eza --icons'
-alias ll='eza -l --icons --git'
-alias la='eza -la --icons --git'
-alias lt='eza --tree --icons'
-alias cat='bat'
-alias grep='rg'
+# Modern CLI replacements — human shells only (see _agent_shell note up top).
+# Agent shells skip these and call eza/bat/rg directly.
+if [[ -z "$_agent_shell" ]]; then
+    alias ls='eza --icons'
+    alias ll='eza -l --icons --git'
+    alias la='eza -la --icons --git'
+    alias lt='eza --tree --icons'
+    alias cat='bat'
+    alias grep='rg'
+
+    # fzf (CTRL-R fuzzy history)
+    command -v fzf >/dev/null 2>&1 && source <(fzf --zsh)
+fi
+
 alias clip='wl-copy'
 dclip() { { print -- "\$ ${(q-)@}"; "$@" 2>&1 } | tee >(wl-copy --primary); return ${pipestatus[1]} }
-
-# fzf (CTRL-R fuzzy history)
-command -v fzf >/dev/null 2>&1 && source <(fzf --zsh)
 
 # AWS SSO profile switchers
 awslogin() {
@@ -94,6 +105,18 @@ awslogout() {
 
 # Project shortcuts
 alias winnifred='uv run ~/repos/Winnifred/scripts/run-local.py'
+
+# Claude Code: when launched from a bare $HOME shell, run the session in ~/desk
+# (a persistently-trusted workspace); $HOME itself can't hold trust by design.
+# Anywhere else, behave exactly like `claude`. Runs in a subshell so the
+# interactive shell's cwd is untouched.
+claude() {
+    if [[ $PWD == $HOME ]]; then
+        ( cd "$HOME/desk" && command claude "$@" )
+    else
+        command claude "$@"
+    fi
+}
 alias cl='claude'
 
 # NVM
@@ -102,8 +125,11 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 
 # zoxide — must initialize last so its hooks aren't overridden by anything
-# loaded later (NVM, PATH-dependent tools, etc.)
-if command -v zoxide >/dev/null 2>&1; then
+# loaded later (NVM, PATH-dependent tools, etc.). Human shells only: agent
+# shells keep plain `cd` so a bad path fails instead of jumping by frecency.
+if [[ -z "$_agent_shell" ]] && command -v zoxide >/dev/null 2>&1; then
     alias ci='cdi'
     eval "$(zoxide init --cmd cd zsh)"
 fi
+
+unset _agent_shell

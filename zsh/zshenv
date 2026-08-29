@@ -4,12 +4,15 @@
 # Auto-dedupe path-like arrays (replaces the old awk de-dupe hack in .zshrc)
 typeset -U path PATH fpath FPATH
 
-# Go — keep GOPATH out of ~ (XDG data dir)
+# Keep tool state out of ~ (XDG data dir)
 export GOPATH="${XDG_DATA_HOME:-$HOME/.local/share}/go"
+export CARGO_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/cargo"
+export RUSTUP_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/rustup"
 
 # PATH — later entries here take precedence (prepended)
 path=(
     "$GOPATH/bin"
+    "$CARGO_HOME/bin"
     "$HOME/.local/bin"
     $path
 )
