@@ -76,14 +76,22 @@ time_str = f'{WHITE}{datetime.datetime.now().strftime(\"%-I:%M %p\")}{R}'
 sep  = f'  {GRAY}|{R}  '
 pipe = f'  {GRAY}|{R}  '
 
-# git seg: branch  ●N ↑N ↓N  |  time
+# Model
+model = data.get('model') or {}
+model_name = model.get('display_name') or model.get('id') or ''
+model_str = f'{GREEN}{BOLD}{model_name}{R}' if model_name else ''
+
+# git seg: branch  ●N ↑N ↓N  |  model  |  time
 git_seg_parts = []
 if branch:
     git_seg_parts.append(f'{YELLOW}{branch}{R}')
 else:
     git_seg_parts.append(f'{GRAY}none{R}')
 if git_status_parts: git_seg_parts.append(' '.join(git_status_parts))
-git_seg = '  '.join(git_seg_parts) + pipe + time_str
+git_seg = '  '.join(git_seg_parts) + pipe
+if model_str:
+    git_seg += model_str + pipe
+git_seg += time_str
 
 # Context
 ctx = data.get('context_window') or {}
