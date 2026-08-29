@@ -25,3 +25,7 @@ path=(
 )
 export PATH
 unset _node_bin
+
+# Portable helpers (aws switchers, clipboard, project shortcuts) — every shell,
+# agent sessions included. Interactive-only config stays in ~/.zshrc.
+[ -r "$HOME/dotfiles/zsh/functions.zsh" ] && source "$HOME/dotfiles/zsh/functions.zsh"

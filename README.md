@@ -11,7 +11,7 @@ config/      ~/.config subtrees (Hyprland, waybar, kitty, nvim, etc.)
 git/         gitconfig, global ignore
 keyd/        keyd remap config (symlinked to /etc/keyd/)
 shell/       dircolors
-zsh/         zshenv (env + PATH), zshrc (interactive)
+zsh/         zshenv (env + PATH + functions.zsh), zshrc (interactive), functions.zsh (portable helpers)
 ```
 
 ## Setup

@@ -59,47 +59,13 @@ alias la='eza -la --icons --git'
 alias lt='eza --tree --icons'
 alias cat='bat'
 alias grep='rg'
-alias clip='wl-copy'
-dclip() { { print -- "\$ ${(q-)@}"; "$@" 2>&1 } | tee >(wl-copy --primary); return ${pipestatus[1]} }
 
 # fzf (CTRL-R fuzzy history)
 command -v fzf >/dev/null 2>&1 && source <(fzf --zsh)
 
-# AWS SSO profile switchers
-awslogin() {
-    local profile="$1"
-    export AWS_PROFILE="$profile"
-
-    if aws sts get-caller-identity --profile "$profile" >/dev/null 2>&1; then
-        aws sts get-caller-identity --profile "$profile"
-        return 0
-    fi
-
-    if aws sso login --profile "$profile"; then
-        aws sts get-caller-identity --profile "$profile"
-        return 0
-    fi
-
-    aws sso login --profile "$profile" --use-device-code
-    aws sts get-caller-identity --profile "$profile"
-}
-
-awsdev()      { awslogin sandbox; }
-awsadmin()    { awslogin admin; }
-awslrpdev()   { awslogin lrp-sandbox; }
-awslrpadmin() { awslogin lrp-admin; }
-
-awswho() {
-    aws sts get-caller-identity --profile "${AWS_PROFILE:-default}"
-}
-
-awslogout() {
-    aws sso logout >/dev/null 2>&1
-    unset AWS_PROFILE
-}
-
-# Project shortcuts
-alias winnifred='uv run ~/repos/Winnifred/scripts/run-local.py'
+# Portable helpers (clip/dclip, awslogin/awsdev/…, winnifred) live in
+# ~/dotfiles/zsh/functions.zsh, sourced from ~/.zshenv so agent shells get
+# them too.
 
 # Claude Code: when launched from a bare $HOME shell, run the session in ~/desk
 # (a persistently-trusted workspace); $HOME itself can't hold trust by design.
