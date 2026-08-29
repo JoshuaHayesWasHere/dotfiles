@@ -6,7 +6,7 @@ Personal dotfiles for Arch + Hyprland. Built on top of [JaKooLit's KooL Dots](ht
 
 ```
 bash/        bashrc, bash_profile
-claude/      Claude Code settings + statusline
+claude/      Claude Code settings, statusline, global CLAUDE.md
 config/      ~/.config subtrees (Hyprland, waybar, kitty, nvim, etc.)
 git/         gitconfig, global ignore
 keyd/        keyd remap config (symlinked to /etc/keyd/)
@@ -40,6 +40,7 @@ ln -sf ~/dotfiles/starship/starship.toml ~/.config/starship.toml
 mkdir -p ~/.claude
 ln -sf ~/dotfiles/claude/settings.json  ~/.claude/settings.json
 ln -sf ~/dotfiles/claude/statusline.sh  ~/.claude/statusline.sh
+ln -sf ~/dotfiles/claude/CLAUDE.md      ~/.claude/CLAUDE.md
 
 # ~/.config — symlink each tracked subtree
 mkdir -p ~/.config
