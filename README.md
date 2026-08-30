@@ -13,6 +13,7 @@ gtk/         gtkrc-2.0 (GTK2; GTK3/4 live under config/)
 keyd/        keyd remap config (symlinked to /etc/keyd/)
 openrgb/     RGB profile, restore hook, systemd drop-ins (all symlinked out)
 shell/       dircolors
+tmux/        tmux.conf (crew session for firstmate, Catppuccin Frappe to match kitty)
 zsh/         zshenv (env + PATH), zshrc (interactive only), functions.zsh (portable helpers)
 ```
 
@@ -59,6 +60,10 @@ ln -sf ~/dotfiles/gtk/gtkrc-2.0      ~/.gtkrc-2.0
 # Starship prompt
 mkdir -p ~/.config
 ln -sf ~/dotfiles/starship/starship.toml ~/.config/starship.toml
+
+# tmux
+mkdir -p ~/.config/tmux
+ln -sf ~/dotfiles/tmux/tmux.conf ~/.config/tmux/tmux.conf
 
 # Claude Code
 mkdir -p ~/.claude
