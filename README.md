@@ -1,4 +1,4 @@
-# dotfiles — Arch Linux
+# dotfiles: Arch Linux
 
 Personal dotfiles for Arch + Hyprland. Built on top of [JaKooLit's KooL Dots](https://github.com/JaKooLit/Hyprland-Dots) as a starting rice.
 
@@ -11,14 +11,14 @@ config/      ~/.config subtrees (Hyprland, waybar, kitty, nvim, etc.)
 git/         gitconfig, global ignore
 gtk/         gtkrc-2.0 (GTK2; GTK3/4 live under config/)
 keyd/        keyd remap config (symlinked to /etc/keyd/)
-openrgb/     RGB profile (symlinked to /etc/openrgb/)
+openrgb/     RGB profile, restore hook, systemd drop-ins (all symlinked out)
 shell/       dircolors
 zsh/         zshenv (env + PATH), zshrc (interactive only), functions.zsh (portable helpers)
 ```
 
 ### How the zsh files split
 
-Three files, loaded in different circumstances — this split is deliberate:
+Three files, loaded in different circumstances. This split is deliberate:
 
 | File | Loads for | Holds |
 |------|-----------|-------|
@@ -66,7 +66,7 @@ ln -sf ~/dotfiles/claude/settings.json  ~/.claude/settings.json
 ln -sf ~/dotfiles/claude/statusline.sh  ~/.claude/statusline.sh
 ln -sf ~/dotfiles/claude/CLAUDE.md      ~/.claude/CLAUDE.md
 
-# ~/.config — symlink each tracked subtree
+# ~/.config: symlink each tracked subtree
 mkdir -p ~/.config
 for d in hypr waybar rofi wlogout swaync swappy wallust kitty nvim btop cava \
          fastfetch qalculate Kvantum qt5ct qt6ct gtk-3.0 gtk-4.0 nwg-look \
@@ -107,8 +107,8 @@ yay -S zsh ripgrep bat eza fd zoxide fzf starship jq uv \
 **The desktop stack is assumed, not installed here.** Hyprland itself plus
 `waybar`, `rofi`, `swaync`, `awww`, `grim`, `slurp`, `playerctl`, `pamixer`,
 `brightnessctl`, `cliphist` and friends come from
-[JaKooLit's KooL Dots](https://github.com/JaKooLit/Hyprland-Dots) installer —
-run that first, then lay these dotfiles over the top.
+[JaKooLit's KooL Dots](https://github.com/JaKooLit/Hyprland-Dots) installer.
+Run that first, then lay these dotfiles over the top.
 
 ### 3. Oh My Zsh (if not using AUR package)
 
@@ -154,13 +154,52 @@ The daemon runs as `openrgb --server --config /etc/openrgb --profile default`, s
 the profile that matters lives in **`/etc/openrgb/`**, not `~/.config/OpenRGB`
 (that one is only the GUI's scratch directory and is deliberately untracked).
 
+Four pieces make up the setup, all tracked in `openrgb/` here:
+
+| Repo file | Installed to | Purpose |
+|-----------|--------------|---------|
+| `default.orp` | `/etc/openrgb/default.orp` | zone geometry (D_LED = 36 LEDs) and modes |
+| `openrgb-restore-lighting` | `/usr/local/bin/` | re-applies colors after detection settles |
+| `openrgb.service.d/profile.conf` | `/etc/systemd/system/openrgb.service.d/` | loads the profile, serves on `0.0.0.0:6742` |
+| `openrgb.service.d/apply-lighting.conf` | same | runs the restore hook as `ExecStartPost` |
+
+Full reinstall:
+
 ```bash
 yay -S openrgb
 sudo ln -sfn ~/dotfiles/openrgb/default.orp /etc/openrgb/default.orp
+sudo ln -sfn ~/dotfiles/openrgb/openrgb-restore-lighting /usr/local/bin/openrgb-restore-lighting
+sudo mkdir -p /etc/systemd/system/openrgb.service.d
+sudo ln -sfn ~/dotfiles/openrgb/openrgb.service.d/profile.conf \
+             /etc/systemd/system/openrgb.service.d/profile.conf
+sudo ln -sfn ~/dotfiles/openrgb/openrgb.service.d/apply-lighting.conf \
+             /etc/systemd/system/openrgb.service.d/apply-lighting.conf
+sudo systemctl daemon-reload
+sudo systemctl enable --now openrgb.service
+```
+
+Home Assistant reaches this over the SDK port, so the box it runs on must be this
+one. See the `HomeAssistant` repo for the config entry.
+
+**Detection runs once, at daemon start.** OpenRGB caches a file descriptor per HID
+device and never re-probes. If a USB HID device renumbers while the daemon is up
+(a wireless receiver reconnecting is the usual cause), OpenRGB keeps writing into
+the dead handle, which wedges its whole HID path and silently kills every other
+HID device with it. SMBus devices such as the RAM keep working, so the symptom is
+partial: RAM controllable, motherboard and fans dead. The fix is
+`sudo systemctl restart openrgb.service`. To stop it recurring, disable the
+detector for any device you do not actually control from Home Assistant:
+
+```bash
+sudo python3 -c "
+import json
+p='/etc/openrgb/OpenRGB.json'
+d=json.load(open(p)); d['Detectors']['detectors']['VSG Mintaka']=False
+json.dump(d,open(p,'w'),indent=4)"
 ```
 
 **Watch for drift.** Unlike keyd, OpenRGB rewrites its own config files when you
-save a profile, and it replaces rather than edits in place — which can clobber
+save a profile, and it replaces rather than edits in place, which can clobber
 the symlink and leave `/etc/openrgb/default.orp` as a regular file while the repo
 copy silently goes stale. After saving a profile in the GUI, check it:
 
@@ -182,7 +221,7 @@ sudo ln -sfn ~/dotfiles/openrgb/default.orp /etc/openrgb/default.orp
 
 ### Modern CLI replacements
 
-Interactive shells only — see [How the zsh files split](#how-the-zsh-files-split).
+Interactive shells only. See [How the zsh files split](#how-the-zsh-files-split).
 Agent shells get plain coreutils and call `eza`/`bat`/`rg` by name.
 
 | Alias | Command | Description |
@@ -207,8 +246,8 @@ Agent shells get plain coreutils and call `eza`/`bat`/`rg` by name.
 
 | Command | Runs |
 |---------|------|
-| `winnifred` | `uv run ~/repos/Winnifred/scripts/run-local.py` (function — args pass through) |
-| `aa` | `uv run --project ~/repos/archaholics-anonymous aa` — an alias until the tool has earned a spot on `PATH`; graduating means `uv tool install --editable` (shim into `~/.local/bin`) and dropping the alias |
+| `winnifred` | `uv run ~/repos/Winnifred/scripts/run-local.py` (function, args pass through) |
+| `aa` | `uv run --project ~/repos/archaholics-anonymous aa`, an alias until the tool has earned a spot on `PATH`; graduating means `uv tool install --editable` (shim into `~/.local/bin`) and dropping the alias |
 | `cl` | `claude` (launch Claude Code) |
 | `claude` | Shell function, not the bare binary: launched from a bare `$HOME` it runs the session in `~/desk` (a persistently-trusted workspace, since `$HOME` itself cannot hold trust). Anywhere else it behaves exactly like `claude`. |
 
@@ -219,7 +258,7 @@ and agent shells have no business holding a one-word reboot command.
 
 | Command | Description |
 |---------|-------------|
-| `windows` | Reboot into Windows **once**. Sets a UEFI one-shot entry the firmware consumes and clears itself, so `BootOrder` is never touched. Looks the entry up by name — Windows updates and NVRAM resets renumber `BootXXXX`. |
+| `windows` | Reboot into Windows **once**. Sets a UEFI one-shot entry the firmware consumes and clears itself, so `BootOrder` is never touched. Looks the entry up by name, because Windows updates and NVRAM resets renumber `BootXXXX`. |
 | `bios` | Reboot straight into BIOS setup, bypassing Fast Boot's ~1s keyboard window. |
 
 Both run `sudo -k` first to drop any cached credential, so a recent unrelated
@@ -243,7 +282,7 @@ folded into that password prompt.
 ## Wallpaper
 
 `config/hypr/wallpaper_effects/.wallpaper_current` and `.wallpaper_modified` are
-**runtime state, not config** — they are the live wallpaper bitmaps, rewritten
+**runtime state, not config**: they are the live wallpaper bitmaps, rewritten
 (megabytes at a time) on every wallpaper change, so they are gitignored.
 
 Eight tracked files read `.wallpaper_current` (hyprlock, the SDDM wallpaper
@@ -251,4 +290,4 @@ script, `RestoreWallpaper.sh`, the wallust theming scripts). On a fresh clone it
 does not exist yet, so **pick a wallpaper on first login** with the KooL Dots
 wallpaper picker (`hypr/UserScripts/WallpaperSelect.sh`); everything downstream
 regenerates from it. `RestoreWallpaper.sh` exits cleanly when the file is
-missing, so nothing breaks in the meantime — the desktop just comes up bare.
+missing, so nothing breaks in the meantime, the desktop just comes up bare.

@@ -1,0 +1,73 @@
+#!/bin/sh
+# Re-apply OpenRGB lighting once the server has finished hardware detection.
+#
+# Why this exists: openrgb.service loads /etc/openrgb/default.orp, which restores
+# zone geometry (D_LED = 36 LEDs) and the Direct mode, but NOT the colors -- a
+# profile saved with `openrgb -sp` stores black for these devices. So the colors
+# are set explicitly here instead.
+#
+# Race note: profile load and hardware detection both run in the background
+# after the server starts, and detection got slower once the RAM SMBus
+# controllers were added (they need SMBus probing, unlike the USB/HID
+# motherboard and keyboard). If this script sets the color before profile
+# load finishes settling, the profile's saved (black) color can overwrite it
+# moments later. To guard against that: wait for the device count to go
+# stable, apply the color, then reapply once more after a short delay as a
+# safety net against a late profile write.
+#
+# Zone 0 (D_LED) is resized and set on its own because the resize has to be
+# zone-scoped. The colour is then re-applied to the whole device so zone 1
+# (LED_C) matches instead of being left at black: Home Assistant's light entity
+# is device-wide and writes all 37 LEDs at once, so a black LED_C would jump to
+# the chosen colour the first time the dashboard tile is touched.
+#
+# Fans and RAM use different hex values on purpose: the fans' ARGB LEDs render
+# pure FFFFFF with a visible blue/violet cast (an LED-balance quirk of that
+# hardware), so FAN_COLOR is a warm-compensated white (blue channel pulled
+# back) tuned by eye against the RAM, which renders true FFFFFF correctly.
+#
+# Edit FAN_COLOR / RAM_COLOR / FAN_LEDS below to change the lighting. Both
+# RAM sticks share the controller name "ENE DRAM", and -d does a substring
+# match against all matching devices in one call, so one invocation covers
+# both.
+
+FAN_COLOR=FFFFB3    # RRGGBB -- warm-compensated white, tuned against the RAM
+RAM_COLOR=FFFFFF    # RRGGBB -- true white; renders correctly on this RAM's LEDs
+FAN_LEDS=36         # total addressable LEDs on the D_LED header (3 fans)
+FAN_DEVICE="A620M"        # substring match on the motherboard controller
+RAM_DEVICE="ENE DRAM"     # substring match on both DRAM controllers
+SERVER=127.0.0.1:6742
+
+apply() {
+    openrgb --client "$SERVER" -d "$FAN_DEVICE" -z 0 -sz "$FAN_LEDS" -m direct -c "$FAN_COLOR" >/dev/null 2>&1
+    openrgb --client "$SERVER" -d "$FAN_DEVICE" -m direct -c "$FAN_COLOR" >/dev/null 2>&1
+    openrgb --client "$SERVER" -d "$RAM_DEVICE" -m direct -c "$RAM_COLOR" >/dev/null 2>&1
+}
+
+# Wait for the device list to appear and its count to stop changing between
+# two 2s-apart samples -- a proxy for "detection has settled".
+prev=-1
+stable=0
+i=0
+while [ "$i" -lt 60 ]; do
+    list="$(openrgb --client "$SERVER" -l 2>/dev/null)"
+    count="$(printf '%s\n' "$list" | grep -cE '^[0-9]+:')"
+    if [ "$count" -gt 0 ] && [ "$count" = "$prev" ]; then
+        stable=$((stable + 1))
+        [ "$stable" -ge 2 ] && break
+    else
+        stable=0
+    fi
+    prev="$count"
+    i=$((i + 1))
+    sleep 2
+done
+
+if printf '%s\n' "$list" | grep -q "$FAN_DEVICE"; then
+    apply
+    sleep 5
+    apply   # reapply in case a late profile load clobbered the first one
+fi
+
+# Never fail the unit: Restart=on-failure would loop the server.
+exit 0
