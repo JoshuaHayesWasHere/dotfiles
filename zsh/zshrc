@@ -79,6 +79,42 @@ claude() {
 }
 alias cl='claude'
 
+# Local utilities run as an alias until they have earned a spot on PATH; the
+# graduation is `uv tool install --editable <path>`, which puts the shim in
+# ~/.local/bin — drop the alias at that point.
+alias aa='uv run --project "$HOME/repos/archaholics-anonymous" aa'
+
+# Dual-boot helpers. The firmware boot-menu window is 1s wide, so catching
+# F12/Del is a coin flip. Both of these set a UEFI one-shot variable instead:
+# the firmware consumes it on the next boot and clears it itself, so BootOrder
+# is never touched and every other boot still comes straight to Linux.
+# Deliberately here rather than in functions.zsh — they need a TTY to prompt,
+# and agent shells have no business holding a one-word reboot command.
+#
+# Both force a FRESH password: `sudo -k` drops any cached credential first, so
+# a recent unrelated sudo can never let a stray keystroke reboot the machine.
+# `sudo -p` folds the confirmation into that one prompt — it names what is
+# about to happen, and Ctrl-C or a wrong password aborts before the reboot.
+
+# Reboot into Windows once. The entry is looked up by name: Windows updates
+# and NVRAM resets renumber BootXXXX, so hardcoding the number goes stale.
+windows() {
+    local entry
+    entry=$(efibootmgr | awk '/Windows Boot Manager/{print substr($1,5,4); exit}')
+    if [[ -z $entry ]]; then
+        print -u2 "windows: no 'Windows Boot Manager' entry found in efibootmgr"
+        return 1
+    fi
+    sudo -k -p "Reboot into Windows (Boot$entry)? password for %p: " \
+        efibootmgr -n "$entry" >/dev/null && systemctl reboot
+}
+
+# Reboot straight into BIOS Setup, bypassing Fast Boot's keyboard window.
+bios() {
+    sudo -k -p "Reboot into BIOS setup? password for %p: " \
+        systemctl reboot --firmware-setup
+}
+
 # NVM
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"

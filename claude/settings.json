@@ -1,28 +1,4 @@
 {
-  "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "gh-axi",
-            "timeout": 10
-          }
-        ]
-      },
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "lavish-axi",
-            "timeout": 10
-          }
-        ]
-      }
-    ]
-  },
   "cleanupPeriodDays": 120,
   "env": {
     "_ZO_DOCTOR": "0"
@@ -89,6 +65,30 @@
     ]
   },
   "model": "opus[1m]",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "gh-axi",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "lavish-axi",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
   "statusLine": {
     "type": "command",
     "command": "bash /home/joshua/.claude/statusline.sh",
@@ -133,5 +133,6 @@
       "**Org-specific CLIs**: None configured",
       "routine under JoshuaHayesWasHere/ prefix: pushes to `origin` (the user's own fork/repo) are routine; pushes to `upstream` are disabled and out of scope"
     ]
-  }
+  },
+  "skipDangerousModePermissionPrompt": true
 }
