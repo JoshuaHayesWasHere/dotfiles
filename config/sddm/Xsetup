@@ -1,0 +1,10 @@
+#!/bin/sh
+# Match the normal Hyprland session's monitor arrangement (config/hypr/monitors.conf)
+# for the SDDM greeter, so the lock/login screen isn't laid out differently.
+# RandR output names confirmed live to match Hyprland's Wayland names (same
+# physical monitors by EDID) - see data/hypr-lockscreen-monitors/findings.md
+# in the hypr secondmate home for the full investigation.
+xrandr \
+    --output DP-2 --mode 1920x1080 --pos 2085x363 --rotate left \
+    --output DP-1 --primary --mode 2560x1440 --pos 3165x363 --rotate normal \
+    --output DP-3 --mode 1920x1080 --pos 5725x723 --rotate normal
