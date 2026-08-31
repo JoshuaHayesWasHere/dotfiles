@@ -64,7 +64,7 @@
       "/home/joshua/.claude"
     ]
   },
-  "model": "opus[1m]",
+  "model": "sonnet",
   "hooks": {
     "SessionStart": [
       {
@@ -100,6 +100,7 @@
     }
   },
   "tui": "fullscreen",
+  "skipDangerousModePermissionPrompt": true,
   "theme": "dark",
   "verbose": false,
   "autoCompactEnabled": true,
@@ -133,6 +134,5 @@
       "**Org-specific CLIs**: None configured",
       "routine under JoshuaHayesWasHere/ prefix: pushes to `origin` (the user's own fork/repo) are routine; pushes to `upstream` are disabled and out of scope"
     ]
-  },
-  "skipDangerousModePermissionPrompt": true
+  }
 }
