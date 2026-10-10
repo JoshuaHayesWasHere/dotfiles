@@ -1,0 +1,6 @@
+[Unit]
+Description=Notify when a unit or container on this machine breaks
+
+[Service]
+Type=oneshot
+ExecStart=%h/dotfiles/systemd/hub-watch

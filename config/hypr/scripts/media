@@ -1,0 +1,25 @@
+#!/bin/sh
+# media toggle|next|previous|stop
+# Drive the active MPRIS player and say what is now playing.
+set -eu
+
+notify() {
+    notify-send -e -u low -i audio-x-generic \
+        -h string:x-canonical-private-synchronous:media "$@"
+}
+
+case "${1:-}" in
+    toggle)   playerctl play-pause ;;
+    next)     playerctl next ;;
+    previous) playerctl previous ;;
+    stop)     playerctl stop; notify "Playback" "Stopped"; exit ;;
+    *)        echo "usage: media toggle|next|previous|stop" >&2; exit 2 ;;
+esac
+
+# Give the player a moment to report its new state, then read it in one call.
+sleep 0.3
+now=$(playerctl metadata --format '{{status}}|{{title}} by {{artist}}' 2>/dev/null || true)
+case "$now" in
+    Playing\|*) notify "Now playing" "${now#*|}" ;;
+    Paused\|*)  notify "Playback" "Paused" ;;
+esac

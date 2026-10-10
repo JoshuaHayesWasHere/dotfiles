@@ -1,0 +1,138 @@
+# ~/.zshrc: interactive human shell (Arch + Hyprland).
+#
+# Environment + PATH live in ~/.zshenv, which loads for EVERY zsh (login,
+# scripts, and the snapshot Claude Code sources before each command). So
+# agent/automation shells already have every tool on PATH: they want none
+# of the interactive weight below (Oh My Zsh + ~200 git aliases, plugins,
+# nvm.sh, Starship, the greeting). Bail out before any of it.
+[[ -n "$CLAUDECODE$AI_AGENT" ]] && return
+
+# Oh My Zsh
+export ZSH="$HOME/.oh-my-zsh"
+ZSH_THEME=""   # prompt handled by Starship (see below)
+
+# Keep the completion dump out of $HOME (XDG cache)
+ZSH_COMPDUMP="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump-${HOST}-${ZSH_VERSION}"
+[ -d "${ZSH_COMPDUMP:h}" ] || mkdir -p "${ZSH_COMPDUMP:h}"
+
+plugins=(
+    git
+    archlinux
+    zsh-autosuggestions
+    zsh-syntax-highlighting
+    aws
+)
+
+source $ZSH/oh-my-zsh.sh
+# https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/archlinux
+
+# Starship prompt (replaces OMZ theme; keeps plugins)
+command -v starship >/dev/null 2>&1 && eval "$(starship init zsh)"
+
+# History: HISTFILE is set in ~/.zshenv (XDG state dir)
+HISTSIZE=10000
+SAVEHIST=10000
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_ALL_DUPS
+setopt SHARE_HISTORY
+setopt INC_APPEND_HISTORY
+setopt appendhistory
+
+# Prefix-based history search
+bindkey '^[[A' history-search-backward
+bindkey '^[[B' history-search-forward
+
+# LS_COLORS via dircolors (if present)
+[ -r "$HOME/.dircolors" ] && eval "$(dircolors "$HOME/.dircolors")"
+
+# Greeting: system info with a random Pokemon as the logo, when both tools are
+# installed. The layout is ~/.config/fastfetch/config.jsonc.
+if command -v pokemon-colorscripts >/dev/null 2>&1 && command -v fastfetch >/dev/null 2>&1; then
+    pokemon-colorscripts --no-title -s -r | fastfetch --logo-type file-raw --logo -
+fi
+
+# Modern CLI replacements
+alias ls='eza --icons'
+alias ll='eza -l --icons --git'
+alias la='eza -la --icons --git'
+alias lt='eza --tree --icons'
+alias cat='bat'
+alias grep='rg'
+
+# fzf (CTRL-R fuzzy history)
+command -v fzf >/dev/null 2>&1 && source <(fzf --zsh)
+
+# Portable helpers (clip/dclip, awslogin, winnifred) live in
+# ~/dotfiles/zsh/functions.zsh, sourced from ~/.zshenv so agent shells get
+# them too.
+
+# Claude Code: when launched from a bare $HOME shell, run the session in ~/desk
+# (a persistently-trusted workspace); $HOME itself can't hold trust by design.
+# Anywhere else, behave exactly like `claude`. Runs in a subshell so the
+# interactive shell's cwd is untouched.
+claude() {
+    if [[ $PWD == $HOME ]]; then
+        ( cd "$HOME/desk" && command claude "$@" )
+    else
+        command claude "$@"
+    fi
+}
+alias cl='claude'
+
+# Local utilities run as an alias until they have earned a spot on PATH; the
+# graduation is `uv tool install --editable <path>`, which puts the shim in
+# ~/.local/bin; drop the alias at that point.
+alias aa='uv run --project "$HOME/repos/archaholics-anonymous" aa'
+alias hydra-lab='uv run --project "$HOME/repos/hydra-lab" hydra-lab'
+alias pmeter='uv run --project "$HOME/repos/pipeline" pmeter'
+
+# lavish-axi is npm-linked from ~/repos/lavish-axi, which is not part of
+# firstmate's managed fleet, so nothing pulls it forward automatically.
+alias lavish-axi-update='git -C ~/repos/lavish-axi pull && (cd ~/repos/lavish-axi && pnpm install && pnpm run build)'
+
+# Dual-boot helpers. The firmware boot-menu window is 1s wide, so catching
+# F12/Del is a coin flip. Both of these set a UEFI one-shot variable instead:
+# the firmware consumes it on the next boot and clears it itself, so BootOrder
+# is never touched and every other boot still comes straight to Linux.
+# Deliberately here rather than in functions.zsh: they need a TTY to prompt,
+# and agent shells have no business holding a one-word reboot command.
+#
+# Both force a FRESH password: `sudo -k` drops any cached credential first, so
+# a recent unrelated sudo can never let a stray keystroke reboot the machine.
+# `sudo -p` folds the confirmation into that one prompt: it names what is
+# about to happen, and Ctrl-C or a wrong password aborts before the reboot.
+
+# Reboot into Windows once. The entry is looked up by name: Windows updates
+# and NVRAM resets renumber BootXXXX, so hardcoding the number goes stale.
+windows() {
+    local entry
+    entry=$(efibootmgr | awk '/Windows Boot Manager/{print substr($1,5,4); exit}')
+    if [[ -z $entry ]]; then
+        print -u2 "windows: no 'Windows Boot Manager' entry found in efibootmgr"
+        return 1
+    fi
+    sudo -k -p "Reboot into Windows (Boot$entry)? password for %p: " \
+        efibootmgr -n "$entry" >/dev/null && systemctl reboot
+}
+
+# Reboot straight into BIOS Setup, bypassing Fast Boot's keyboard window.
+bios() {
+    sudo -k -p "Reboot into BIOS setup? password for %p: " \
+        systemctl reboot --firmware-setup
+}
+
+# NVM
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+
+# mise: per-directory tool versions and environment (mise.toml). Interactive
+# shells get the full hook; scripts and agent shells use the shims on PATH
+# (see ~/.zshenv).
+command -v mise >/dev/null 2>&1 && eval "$(mise activate zsh)"
+
+# zoxide: must initialize last so its hooks aren't overridden by anything
+# loaded later (NVM, PATH-dependent tools, etc.)
+if command -v zoxide >/dev/null 2>&1; then
+    alias ci='cdi'
+    eval "$(zoxide init --cmd cd zsh)"
+fi

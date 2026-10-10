@@ -1,0 +1,5 @@
+{
+  "include": ["$HOME/.config/waybar/config.jsonc"],
+  "output": "DP-3",
+  "modules-left": ["clock", "mpris", "custom/swaync"]
+}

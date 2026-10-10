@@ -1,0 +1,58 @@
+name: check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # the secrets scan reads the whole history
+
+      - name: Install tools
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck zsh lua5.4 luajit jq
+
+      - name: Shell scripts pass shellcheck
+        run: |
+          shellcheck -s sh config/hypr/scripts/*
+          shellcheck install tests/install.test.sh claude/statusline.sh claude/aws-signin-check.sh \
+            config/sddm/Xsetup openrgb/openrgb-restore-lighting systemd/hub-watch
+
+      - name: zsh files parse
+        run: for f in zsh/zshenv zsh/zshrc zsh/functions.zsh; do zsh -n "$f"; done
+
+      - name: Shell helper tests
+        run: zsh zsh/functions.test.zsh
+
+      - name: Installer tests
+        run: sh tests/install.test.sh
+
+      - name: Lua files parse
+        run: |
+          for f in config/hypr/*.lua; do luac5.4 -p "$f"; done
+          find config/nvim -name '*.lua' -print0 | xargs -0 -n1 luajit -bl > /dev/null
+
+      - name: JSON files parse
+        run: git ls-files '*.json' | xargs -r -n1 jq empty
+
+      - name: No secrets in the history
+        run: docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:latest git /repo --no-banner --log-opts=--all
+
+  hyprland:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - name: Install Hyprland
+        run: pacman -Syu --noconfirm --needed hyprland git
+
+      - uses: actions/checkout@v4
+
+      - name: Hyprland accepts the config
+        run: |
+          useradd -m ci
+          cp -r config/hypr /home/ci/hypr && chown -R ci /home/ci/hypr
+          su ci -c 'XDG_RUNTIME_DIR=/tmp Hyprland --verify-config -c /home/ci/hypr/hyprland.lua' | tee /tmp/verify.log
+          grep -qx 'config ok' /tmp/verify.log

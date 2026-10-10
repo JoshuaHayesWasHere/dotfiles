@@ -1,0 +1,36 @@
+/* The keybind cheat sheet (scripts/keybinds): two wide columns of text. */
+
+@import "~/.config/rofi/config.rasi"
+
+configuration {
+    show-icons: false;
+}
+
+window {
+    width: 70%;
+}
+
+mainbox {
+    children: [ inputbar, listview ];
+}
+
+inputbar {
+    children: [ entry ];
+}
+
+entry {
+    placeholder: "Search keybinds";
+}
+
+listview {
+    columns: 2;
+    lines:   16;
+}
+
+element {
+    padding: 5px 14px;
+}
+
+element-text {
+    font: "MesloLGS Nerd Font Mono 12";
+}

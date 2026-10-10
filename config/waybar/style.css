@@ -1,0 +1,81 @@
+/* Catppuccin Mocha, limited to the colours the bar uses. */
+@define-color base      #1e1e2e;
+@define-color crust     #11111b;
+@define-color subtext0  #a6adc8;
+@define-color surface2  #585b70;
+@define-color blue      #89b4fa;
+@define-color sapphire  #74c7ec;
+@define-color maroon    #eba0ac;
+@define-color flamingo  #f2cdcd;
+@define-color rosewater #f5e0dc;
+
+* {
+  font-family: "MesloLGS Nerd Font";
+  font-weight: bold;
+  font-size: 101%;
+  min-height: 0;
+}
+
+window#waybar {
+  background-color: @base;
+  border-radius: 5px;
+}
+
+tooltip {
+  background: @base;
+  border: 2px solid @sapphire;
+  border-radius: 10px;
+}
+
+tooltip label {
+  color: @blue;
+}
+
+/* Workspaces: empty, occupied, visible on this monitor, focused. */
+#workspaces button {
+  color: @surface2;
+  background: transparent;
+  border-radius: 15px;
+  padding: 8px 6px 8px 4px;
+}
+
+#workspaces button:not(.empty) {
+  color: @subtext0;
+}
+
+#workspaces button.active {
+  color: @maroon;
+}
+
+#workspaces button.focused {
+  color: @rosewater;
+}
+
+#workspaces button.urgent {
+  color: @crust;
+}
+
+#workspaces button:hover {
+  color: @flamingo;
+}
+
+#clock,
+#mpris,
+#tray,
+#workspaces,
+#pulseaudio,
+#custom-swaync {
+  padding: 8px 6px;
+}
+
+#clock {
+  color: @sapphire;
+}
+
+#mpris {
+  color: @rosewater;
+}
+
+#pulseaudio {
+  color: @blue;
+}

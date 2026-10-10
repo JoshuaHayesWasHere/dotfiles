@@ -1,0 +1,128 @@
+#!/bin/sh
+# Link this repo into place. Safe to run again at any time: a link that is
+# already right is left alone, and nothing that is not ours is ever overwritten.
+#
+#   ./install             link everything under $HOME
+#   ./install --dry-run   show what would change and change nothing; exits 1
+#                         when something would, so it doubles as a drift check
+#   ./install --system    also link the files that live under /etc and
+#                         /usr/local (keyd, SDDM, OpenRGB), through sudo
+#   ./install --force     move a conflicting file aside to <name>.bak.<time>
+#                         instead of skipping it
+#
+# Packages are not installed here; docs/machine.md lists them.
+set -eu
+
+REPO=$(cd "$(dirname "$0")" && pwd -P)
+CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}"
+
+dry_run=0 system=0 force=0
+for arg in "$@"; do
+    case "$arg" in
+        -n | --dry-run) dry_run=1 ;;
+        --system) system=1 ;;
+        --force) force=1 ;;
+        -h | --help) sed -n '2,/^set -eu/{/^set -eu/d;s/^# \{0,1\}//;p}' "$0"; exit 0 ;;
+        *) echo "install: unknown option: $arg" >&2; exit 2 ;;
+    esac
+done
+
+linked=0 pending=0 conflicts=0 as_root=""
+
+run() { if [ -n "$as_root" ]; then sudo "$@"; else "$@"; fi; }
+
+# link <path in the repo> <where it must appear>
+link() {
+    src="$REPO/$1" dst="$2"
+    if [ ! -e "$src" ]; then
+        echo "missing   $1 is not in the repo" >&2
+        conflicts=$((conflicts + 1))
+        return
+    fi
+    if [ -L "$dst" ] && [ "$(readlink -f "$dst")" = "$(readlink -f "$src")" ]; then
+        linked=$((linked + 1))
+        return
+    fi
+    if [ -e "$dst" ] || [ -L "$dst" ]; then
+        if [ "$force" -eq 0 ]; then
+            echo "conflict  $dst exists and is not a link to $1 (skipped; --force moves it aside)"
+            conflicts=$((conflicts + 1))
+            return
+        fi
+        backup="$dst.bak.$(date +%Y%m%d-%H%M%S)"
+        if [ "$dry_run" -eq 1 ]; then
+            echo "would move $dst to $backup"
+        else
+            run mv "$dst" "$backup"
+            echo "moved     $dst to $backup"
+        fi
+    fi
+    if [ "$dry_run" -eq 1 ]; then
+        echo "would link $dst -> $src"
+        pending=$((pending + 1))
+        return
+    fi
+    run mkdir -p "$(dirname "$dst")"
+    run ln -sfn "$src" "$dst"
+    echo "linked    $dst -> $src"
+    linked=$((linked + 1))
+}
+
+# Shell, git, prompt, tmux
+link zsh/zshenv "$HOME/.zshenv"
+link zsh/zshrc "$HOME/.zshrc"
+link bash/bashrc "$HOME/.bashrc"
+link bash/bash_profile "$HOME/.bash_profile"
+link git/config "$CONFIG/git/config"
+link git/ignore "$CONFIG/git/ignore"
+link shell/dircolors "$HOME/.dircolors"
+link gtk/gtkrc-2.0 "$HOME/.gtkrc-2.0"
+link starship/starship.toml "$CONFIG/starship.toml"
+link tmux/tmux.conf "$CONFIG/tmux/tmux.conf"
+
+# Every directory under config/ is one ~/.config subtree, except sddm, whose
+# only file belongs under /etc.
+for dir in "$REPO"/config/*/; do
+    name=$(basename "$dir")
+    [ "$name" = sddm ] || link "config/$name" "$CONFIG/$name"
+done
+link config/mimeapps.list "$CONFIG/mimeapps.list"
+link config/user-dirs.dirs "$CONFIG/user-dirs.dirs"
+link config/user-dirs.locale "$CONFIG/user-dirs.locale"
+
+# systemd user units
+for unit in "$REPO"/systemd/user/*; do
+    link "systemd/user/$(basename "$unit")" "$CONFIG/systemd/user/$(basename "$unit")"
+done
+
+# Claude Code. The live settings file is private to a machine, so it starts as
+# a copy of the published example and is never tracked.
+if [ ! -e "$REPO/claude/settings.json" ]; then
+    if [ "$dry_run" -eq 1 ]; then
+        echo "would copy claude/settings.example.json to claude/settings.json"
+        pending=$((pending + 1))
+    else
+        cp "$REPO/claude/settings.example.json" "$REPO/claude/settings.json"
+        echo "copied    claude/settings.example.json to claude/settings.json"
+    fi
+fi
+[ -e "$REPO/claude/settings.json" ] && link claude/settings.json "$HOME/.claude/settings.json"
+link claude/statusline.sh "$HOME/.claude/statusline.sh"
+link claude/CLAUDE.md "$HOME/.claude/CLAUDE.md"
+
+if [ "$system" -eq 1 ]; then
+    [ "$(id -u)" -eq 0 ] || as_root=1
+    link keyd/default.conf /etc/keyd/default.conf
+    link config/sddm/Xsetup /etc/sddm/scripts/Xsetup
+    link openrgb/default.orp /etc/openrgb/default.orp
+    link openrgb/openrgb-restore-lighting /usr/local/bin/openrgb-restore-lighting
+    link openrgb/openrgb.service.d/profile.conf /etc/systemd/system/openrgb.service.d/profile.conf
+    link openrgb/openrgb.service.d/apply-lighting.conf /etc/systemd/system/openrgb.service.d/apply-lighting.conf
+fi
+
+echo "$linked in place, $pending to link, $conflicts skipped"
+if [ "$dry_run" -eq 1 ]; then
+    [ $((pending + conflicts)) -eq 0 ] || exit 1
+elif [ "$conflicts" -ne 0 ]; then
+    exit 1
+fi

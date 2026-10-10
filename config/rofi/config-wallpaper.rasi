@@ -1,0 +1,41 @@
+/* The wallpaper picker (scripts/wallpaper pick): a grid of thumbnails. */
+
+@import "~/.config/rofi/config.rasi"
+
+window {
+    width: 72%;
+}
+
+mainbox {
+    children: [ inputbar, listview ];
+}
+
+inputbar {
+    children: [ entry ];
+}
+
+entry {
+    placeholder: "Choose a wallpaper";
+}
+
+listview {
+    columns:      5;
+    lines:        2;
+    spacing:      12px;
+    fixed-height: true;
+    flow:         horizontal;
+}
+
+element {
+    orientation: vertical;
+    padding:     10px;
+    spacing:     8px;
+}
+
+element-icon {
+    size: 9em;
+}
+
+element-text {
+    horizontal-align: 0.5;
+}

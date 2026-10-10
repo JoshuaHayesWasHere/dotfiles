@@ -1,0 +1,22 @@
+#!/bin/sh
+# Clipboard history picker (cliphist through rofi).
+# Enter copies the entry, Ctrl+Delete removes it, Alt+Delete wipes the history.
+set -u
+
+theme="$HOME/.config/rofi/config-clipboard.rasi"
+pkill -x rofi && exit 0
+
+while true; do
+    status=0
+    entry=$(cliphist list | rofi -i -dmenu -config "$theme" \
+        -kb-custom-1 "Control-Delete" -kb-custom-2 "Alt-Delete" \
+        -mesg "Ctrl+Del removes the entry, Alt+Del wipes everything") || status=$?
+    case $status in
+        0)  [ -n "$entry" ] || continue
+            printf '%s\n' "$entry" | cliphist decode | wl-copy
+            exit ;;
+        10) printf '%s\n' "$entry" | cliphist delete ;;
+        11) cliphist wipe ;;
+        *)  exit ;;
+    esac
+done

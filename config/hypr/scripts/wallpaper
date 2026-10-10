@@ -1,0 +1,52 @@
+#!/bin/sh
+# wallpaper pick|random|restore
+# Sets one image on every monitor through awww. The choice is remembered as a
+# symlink in the XDG state dir, which is also what hyprlock uses as background.
+set -eu
+
+walls="$HOME/Pictures/wallpapers"
+state="${XDG_STATE_HOME:-$HOME/.local/state}/hypr/wallpaper"
+theme="$HOME/.config/rofi/config-wallpaper.rasi"
+
+list() {
+    find -L "$walls" -type f \
+        \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \) | sort
+}
+
+apply() {
+    mkdir -p "${state%/*}"
+    ln -sfn "$1" "$state"
+    awww img "$1" --transition-type any --transition-fps 60 --transition-duration 2
+}
+
+case "${1:-}" in
+    pick)
+        pkill -x rofi && exit 0
+        images=$(list)
+        # Rows are "name<NUL>icon<US>path": rofi shows the image as the icon
+        # and hands back the row number, which indexes the same list.
+        row=$(printf '%s\n' "$images" | awk '{
+            name = $0; sub(/.*\//, "", name); sub(/\.[^.]*$/, "", name)
+            printf "%s%cicon%c%s\n", name, 0, 31, $0
+        }' | rofi -i -dmenu -format i -config "$theme") || exit 0
+        case "$row" in ''|*[!0-9]*) exit 0 ;; esac
+        apply "$(printf '%s\n' "$images" | sed -n "$((row + 1))p")"
+        ;;
+    random)
+        apply "$(list | shuf -n 1)"
+        ;;
+    restore)
+        [ -e "$state" ] || exit 0
+        # The daemon is started alongside this script; wait for its socket.
+        tries=25
+        while [ "$tries" -gt 0 ] && ! awww query >/dev/null 2>&1; do
+            sleep 0.2
+            tries=$((tries - 1))
+        done
+        awww img "$state" --transition-type none
+        ;;
+    *)
+        echo "usage: wallpaper pick|random|restore" >&2
+        exit 2
+        ;;
+esac

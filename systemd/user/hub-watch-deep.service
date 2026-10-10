@@ -1,0 +1,6 @@
+[Unit]
+Description=Daily aa health check, notifying on critical findings
+
+[Service]
+Type=oneshot
+ExecStart=%h/dotfiles/systemd/hub-watch --deep
