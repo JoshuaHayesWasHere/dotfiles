@@ -1,0 +1,105 @@
+/* The whole look of rofi, in Catppuccin Mocha to match the bar. The
+   config-*.rasi files beside this one only change the layout of one picker. */
+
+* {
+    base:     #1e1e2e;
+    mantle:   #181825;
+    surface0: #313244;
+    surface1: #45475a;
+    text:     #cdd6f4;
+    subtext0: #a6adc8;
+    blue:     #89b4fa;
+    sapphire: #74c7ec;
+
+    background-color: transparent;
+    text-color:       @text;
+    font:             "MesloLGS Nerd Font 13";
+}
+
+window {
+    width:            36%;
+    padding:          14px;
+    background-color: @base;
+    border:           2px;
+    border-color:     @sapphire;
+    border-radius:    12px;
+}
+
+mainbox {
+    spacing:  12px;
+    children: [ inputbar, message, listview, mode-switcher ];
+}
+
+inputbar {
+    children:         [ prompt, entry ];
+    spacing:          10px;
+    padding:          10px 14px;
+    background-color: @surface0;
+    border-radius:    8px;
+}
+
+prompt {
+    text-color: @blue;
+}
+
+entry {
+    placeholder:       "Search";
+    placeholder-color: @subtext0;
+    cursor:            text;
+}
+
+message {
+    padding:          8px 14px;
+    background-color: @mantle;
+    border-radius:    8px;
+}
+
+textbox {
+    text-color: @subtext0;
+}
+
+listview {
+    lines:        9;
+    columns:      1;
+    spacing:      4px;
+    cycle:        true;
+    fixed-height: true;
+    scrollbar:    false;
+}
+
+element {
+    padding:       8px 14px;
+    spacing:       12px;
+    border-radius: 8px;
+}
+
+element selected {
+    background-color: @surface1;
+    text-color:       @blue;
+}
+
+element-icon {
+    size:           1.4em;
+    vertical-align: 0.5;
+}
+
+element-text {
+    text-color:     inherit;
+    vertical-align: 0.5;
+}
+
+mode-switcher {
+    spacing: 8px;
+}
+
+button {
+    padding:          6px;
+    text-color:       @subtext0;
+    background-color: @mantle;
+    border-radius:    8px;
+}
+
+button selected {
+    text-color:       @base;
+    background-color: @blue;
+}

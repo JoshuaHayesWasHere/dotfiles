@@ -1,0 +1,10 @@
+#!/bin/sh
+# Toggle the wlogout power menu. Its margins are in pixels, so they scale with
+# the short side of the focused monitor.
+set -eu
+
+pkill -x wlogout && exit 0
+
+short=$(hyprctl -j monitors | jq -r '.[] | select(.focused) | [.width, .height] | min')
+if [ "${short:-0}" -ge 1440 ]; then margin=400; else margin=200; fi
+exec wlogout --protocol layer-shell -b 5 -T "$margin" -B "$margin"

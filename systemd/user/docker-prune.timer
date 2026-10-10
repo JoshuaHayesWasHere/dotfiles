@@ -1,0 +1,9 @@
+[Unit]
+Description=Prune Docker leftovers weekly
+
+[Timer]
+OnCalendar=weekly
+Persistent=true
+
+[Install]
+WantedBy=timers.target

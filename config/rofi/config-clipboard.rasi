@@ -1,0 +1,23 @@
+/* Clipboard history (scripts/clipboard). */
+
+@import "~/.config/rofi/config.rasi"
+
+configuration {
+    show-icons: false;
+}
+
+window {
+    width: 44%;
+}
+
+mainbox {
+    children: [ inputbar, message, listview ];
+}
+
+inputbar {
+    children: [ entry ];
+}
+
+entry {
+    placeholder: "Search the clipboard";
+}

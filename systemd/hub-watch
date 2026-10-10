@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# hub-watch [--deep]
+# Look for things that are broken on this machine and send one desktop
+# notification when the set of problems changes (and one when it clears).
+# Run from a systemd user timer; always exits 0 so it never becomes a
+# failed unit itself.
+#
+#   default  failed systemd units (system and user), containers that are
+#            dead, stuck restarting, or unhealthy
+#   --deep   additionally, every CRIT finding from `aa check`
+set -uo pipefail
+
+mode=fast
+[[ ${1:-} == --deep ]] && mode=deep
+state="${XDG_STATE_HOME:-$HOME/.local/state}/hub-watch/$mode"
+mkdir -p "${state%/*}"
+
+problems=$(
+    {
+        systemctl --failed --no-legend --plain | awk '{ print "system unit failed: " $1 }'
+        systemctl --user --failed --no-legend --plain | awk '{ print "user unit failed: " $1 }'
+        docker ps -a --filter status=dead --filter status=restarting \
+            --format 'container {{.Names}}: {{.Status}}' 2>/dev/null
+        docker ps --filter health=unhealthy --format 'container {{.Names}}: unhealthy' 2>/dev/null
+        if [[ $mode == deep ]]; then
+            uv run --project "$HOME/repos/archaholics-anonymous" aa check --json 2>/dev/null \
+                | jq -r '.[] | select(.status == "CRIT") | "aa \(.check_id): \(.summary)"' | cut -c1-160
+        fi
+    } | sort -u
+)
+
+[[ $problems == "$(cat "$state" 2>/dev/null)" ]] && exit 0
+printf '%s' "$problems" > "$state"
+
+if [[ -z $problems ]]; then
+    notify-send -i emblem-default "Hub: all clear" "Nothing is failing any more."
+else
+    notify-send -u critical -i dialog-warning \
+        "Hub: $(wc -l <<<"$problems") problem(s)" "$problems"
+fi
+exit 0

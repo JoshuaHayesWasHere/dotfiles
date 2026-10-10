@@ -1,0 +1,15 @@
+# cava: bars from whatever PipeWire is playing, coloured from Catppuccin Mocha.
+# cava writes its shaders/ directory beside this file on first run; that
+# directory is its own and is not tracked.
+
+[input]
+method = pipewire
+source = auto
+
+[color]
+gradient = 1
+gradient_count = 4
+gradient_color_1 = '#89b4fa'
+gradient_color_2 = '#74c7ec'
+gradient_color_3 = '#cba6f7'
+gradient_color_4 = '#f5c2e7'

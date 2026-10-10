@@ -1,0 +1,68 @@
+#!/bin/sh
+# volume up|down|mute|mic
+# Adjust the default sink (or mute the default source) through PipeWire and
+# show one self-replacing notification.
+set -eu
+
+SINK=@DEFAULT_AUDIO_SINK@
+SOURCE=@DEFAULT_AUDIO_SOURCE@
+STEP=5%
+LIMIT=1.5
+
+notify() {
+    notify-send -e -u low -h string:x-canonical-private-synchronous:volume \
+        -h boolean:SWAYNC_BYPASS_DND:true "$@"
+}
+
+# Prints "<percent> <muted|on>" for a node, from a single wpctl call.
+state() {
+    wpctl get-volume "$1" | awk '{ printf "%d %s\n", $2 * 100 + 0.5, ($3 == "[MUTED]") ? "muted" : "on" }'
+}
+
+show_sink() {
+    read -r percent mute <<STATE
+$(state "$SINK")
+STATE
+    if [ "$mute" = muted ]; then
+        notify -i audio-volume-muted "Volume" "Muted"
+        return
+    fi
+    if   [ "$percent" -le 30 ]; then icon=audio-volume-low
+    elif [ "$percent" -le 60 ]; then icon=audio-volume-medium
+    else                             icon=audio-volume-high
+    fi
+    notify -i "$icon" -h "int:value:$percent" "Volume" "$percent %"
+    canberra-gtk-play -i audio-volume-change >/dev/null 2>&1 &
+}
+
+case "${1:-}" in
+    up|down)
+        # Touching the volume while muted just unmutes.
+        case "$(state "$SINK")" in
+            *muted) wpctl set-mute "$SINK" 0 ;;
+            *)
+                if [ "$1" = up ]; then
+                    wpctl set-volume -l "$LIMIT" "$SINK" "$STEP+"
+                else
+                    wpctl set-volume "$SINK" "$STEP-"
+                fi
+                ;;
+        esac
+        show_sink
+        ;;
+    mute)
+        wpctl set-mute "$SINK" toggle
+        show_sink
+        ;;
+    mic)
+        wpctl set-mute "$SOURCE" toggle
+        case "$(state "$SOURCE")" in
+            *muted) notify -i microphone-sensitivity-muted "Microphone" "Off" ;;
+            *)      notify -i microphone-sensitivity-high "Microphone" "On" ;;
+        esac
+        ;;
+    *)
+        echo "usage: volume up|down|mute|mic" >&2
+        exit 2
+        ;;
+esac

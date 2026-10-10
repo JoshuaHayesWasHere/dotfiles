@@ -1,0 +1,12 @@
+/* The app launcher (Super+D), and the base every other picker imports. */
+
+configuration {
+    show-icons:          true;
+    drun-display-format: "{name}";
+    display-drun:        "Apps";
+    display-run:         "Run";
+    display-filebrowser: "Files";
+    display-window:      "Windows";
+}
+
+@theme "~/.config/rofi/theme.rasi"

@@ -1,0 +1,51 @@
+#!/bin/sh
+# screenshot full|area|window|annotate [delay-seconds]
+# Saves to ~/Pictures/Screenshots and copies to the clipboard. `annotate`
+# opens the selected area in swappy instead of saving it directly.
+set -eu
+
+mode=${1:-full}
+delay=${2:-0}
+
+notify() {
+    notify-send -h string:x-canonical-private-synchronous:screenshot "$@"
+}
+
+case "$mode" in
+    full|area|window|annotate) ;;
+    *)
+        echo "usage: screenshot full|area|window|annotate [delay-seconds]" >&2
+        exit 2
+        ;;
+esac
+
+while [ "$delay" -gt 0 ]; do
+    notify -t 1000 -i camera-photo "Screenshot" "in $delay s"
+    sleep 1
+    delay=$((delay - 1))
+done
+
+# Escape in slurp cancels without leaving a file behind.
+case "$mode" in
+    full)          region= ;;
+    area|annotate) region=$(slurp) || exit 0 ;;
+    window)        region=$(hyprctl -j activewindow | jq -r '"\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"') ;;
+esac
+
+if [ "$mode" = annotate ]; then
+    grim -g "$region" - | swappy -f -
+    exit
+fi
+
+dir="$(xdg-user-dir PICTURES)/Screenshots"
+file="$dir/Screenshot_$(date +%d-%b_%H-%M-%S).png"
+mkdir -p "$dir"
+grim ${region:+-g "$region"} "$file"
+
+wl-copy < "$file"
+canberra-gtk-play -i screen-capture >/dev/null 2>&1 &
+case "$file" in
+    "$HOME"/*) shown="~${file#"$HOME"}" ;;
+    *)         shown=$file ;;
+esac
+notify -t 5000 -i "$file" "Screenshot saved" "$shown"

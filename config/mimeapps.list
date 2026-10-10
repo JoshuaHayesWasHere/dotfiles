@@ -1,0 +1,15 @@
+[Default Applications]
+inode/directory=thunar.desktop
+application/x-wayland-gnome-saved-search=thunar.desktop
+x-scheme-handler/claude-cli=claude-code-url-handler.desktop
+text/html=chromium.desktop
+x-scheme-handler/http=chromium.desktop
+x-scheme-handler/https=chromium.desktop
+x-scheme-handler/about=chromium.desktop
+x-scheme-handler/unknown=chromium.desktop
+x-scheme-handler/rpi-imager=com.raspberrypi.rpi-imager-uri-handler.desktop
+x-scheme-handler/t3code=com.t3tools.T3Code.desktop
+x-scheme-handler/grokbot=grok-bot.desktop
+x-scheme-handler/sand=grok-bot.desktop
+
+[Added Associations]

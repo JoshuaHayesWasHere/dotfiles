@@ -1,0 +1,39 @@
+/* The power menu, in Catppuccin Mocha. The icons beside this file are plain
+   stroked SVGs drawn for it, tinted to the palette's text colour. */
+
+* {
+    font-family: "MesloLGS Nerd Font";
+    font-size: 16px;
+    background-image: none;
+    box-shadow: none;
+}
+
+window {
+    background-color: rgba(17, 17, 27, 0.75);
+}
+
+button {
+    margin: 12px;
+    padding-top: 150px;
+    color: #cdd6f4;
+    background-color: #1e1e2e;
+    background-repeat: no-repeat;
+    background-position: center 38%;
+    background-size: 28%;
+    border: 2px solid #313244;
+    border-radius: 16px;
+    outline-style: none;
+}
+
+button:focus,
+button:hover {
+    color: #89b4fa;
+    background-color: #313244;
+    border-color: #74c7ec;
+}
+
+#lock     { background-image: url("icons/lock.svg"); }
+#logout   { background-image: url("icons/logout.svg"); }
+#suspend  { background-image: url("icons/suspend.svg"); }
+#reboot   { background-image: url("icons/reboot.svg"); }
+#shutdown { background-image: url("icons/shutdown.svg"); }

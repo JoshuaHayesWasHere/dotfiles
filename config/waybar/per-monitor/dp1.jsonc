@@ -1,0 +1,4 @@
+{
+  "include": ["$HOME/.config/waybar/config.jsonc"],
+  "output": "DP-1"
+}

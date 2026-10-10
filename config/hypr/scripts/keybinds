@@ -1,0 +1,49 @@
+#!/bin/sh
+# Keybind cheat sheet: every bind that carries a description, straight from the
+# running compositor, so it cannot go stale.
+#
+#   keybinds            show it in rofi (Super+Shift+K)
+#   keybinds markdown   print it as a table, which is how docs/keybinds.md is made
+set -eu
+
+# One "keys<TAB>description" line per bind.
+binds() {
+    hyprctl -j binds | jq -r '
+        def mods:
+            [ (if (.modmask / 64 | floor) % 2 == 1 then "Super" else empty end),
+              (if (.modmask / 4  | floor) % 2 == 1 then "Ctrl"  else empty end),
+              (if (.modmask / 8  | floor) % 2 == 1 then "Alt"   else empty end),
+              (if  .modmask             % 2 == 1 then "Shift" else empty end) ];
+        def keyname:
+            if .key != "" then .key
+            elif .keycode >= 10 and .keycode <= 19 then ((.keycode - 9) % 10 | tostring)
+            else "code:\(.keycode)" end;
+        .[] | select(.has_description)
+            | "\(mods + [keyname] | join(" + "))\t\(.description)"'
+}
+
+if [ "${1:-}" = markdown ]; then
+    cat <<'HEADER'
+# Keybinds
+
+Generated from the running compositor by `config/hypr/scripts/keybinds markdown`.
+Do not edit by hand: change `config/hypr/binds.lua`, then regenerate with
+
+```sh
+~/.config/hypr/scripts/keybinds markdown > ~/dotfiles/docs/keybinds.md
+```
+
+`Super+Shift+K` shows the same list on screen.
+
+| Keys | Action |
+|------|--------|
+HEADER
+    binds | sed 's/|/\\|/g' | awk -F '\t' '{ printf "| `%s` | %s |\n", $1, $2 }'
+    exit 0
+fi
+
+theme="$HOME/.config/rofi/config-keybinds.rasi"
+pkill -x rofi && exit 0
+
+binds | column -t -s "$(printf '\t')" \
+    | rofi -i -dmenu -config "$theme" -mesg "Keybinds" >/dev/null || true

@@ -1,0 +1,138 @@
+// Shared bar definition. The per-monitor files include this and add their
+// output name; Hyprland starts one waybar per monitor (hypr/autostart.lua).
+//
+// Each monitor owns ten workspaces (hypr/workspaces.lua). The first five are
+// always shown here; Hyprland adds the rest on demand.
+{
+  "layer": "top",
+  "position": "top",
+  "exclusive": true,
+  "spacing": 5,
+  "fixed-center": true,
+  "margin-left": 5,
+  "margin-right": 5,
+  "modules-left": [
+    "clock",
+    "mpris",
+    "tray",
+    "custom/swaync"
+  ],
+  "modules-center": [
+    "hyprland/workspaces"
+  ],
+  "modules-right": [
+    "pulseaudio"
+  ],
+  "clock": {
+    "format": "{:%A, %I:%M %p}",
+    "format-alt": "{:%A, %d %B, %Y (%R)}",
+    "tooltip-format": "<big>{:%B %Y}</big>\n<tt><small>{calendar}</small></tt>"
+  },
+  "mpris": {
+    "interval": 10,
+    "format": "{player_icon} ",
+    "format-paused": "{status_icon} <i>{dynamic}</i>",
+    "on-click": "playerctl previous",
+    "on-click-middle": "playerctl play-pause",
+    "on-click-right": "playerctl next",
+    "on-scroll-up": "$HOME/.config/hypr/scripts/volume up",
+    "on-scroll-down": "$HOME/.config/hypr/scripts/volume down",
+    "smooth-scrolling-threshold": 1,
+    "tooltip-format": "{status_icon} {dynamic}\nLeft click: previous\nMiddle click: play / pause\nRight click: next",
+    "player-icons": {
+      "chromium": "",
+      "default": "",
+      "firefox": "",
+      "kdeconnect": "",
+      "mopidy": "",
+      "mpv": "󰐹",
+      "spotify": "",
+      "vlc": "󰕼"
+    },
+    "status-icons": {
+      "paused": "󰐎",
+      "playing": "",
+      "stopped": ""
+    },
+    "max-length": 30
+  },
+  "tray": {
+    "icon-size": 20,
+    "spacing": 4
+  },
+  "custom/swaync": {
+    "format": "{} {icon} ",
+    "format-icons": {
+      "notification": "<span foreground='red'><sup></sup></span>",
+      "none": "",
+      "dnd-notification": "<span foreground='red'><sup></sup></span>",
+      "dnd-none": "",
+      "inhibited-notification": "<span foreground='red'><sup></sup></span>",
+      "inhibited-none": "",
+      "dnd-inhibited-notification": "<span foreground='red'><sup></sup></span>",
+      "dnd-inhibited-none": ""
+    },
+    "return-type": "json",
+    "exec": "swaync-client -swb",
+    "on-click": "swaync-client -t -sw",
+    "on-click-right": "swaync-client -d -sw",
+    "tooltip-format": "Left click: notification centre\nRight click: do not disturb",
+    "escape": true
+  },
+  "hyprland/workspaces": {
+    "all-outputs": false,
+    "format": "{icon}",
+    "on-click": "activate",
+    "on-scroll-up": "hyprctl dispatch 'hl.dsp.focus({ workspace = \"e+1\" })'",
+    "on-scroll-down": "hyprctl dispatch 'hl.dsp.focus({ workspace = \"e-1\" })'",
+    "persistent-workspaces": {
+      "DP-2": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "DP-3": [
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "DP-1": [
+        21,
+        22,
+        23,
+        24,
+        25
+      ]
+    },
+    "format-icons": {
+      "active": "",
+      "default": ""
+    }
+  },
+  "pulseaudio": {
+    "format": "{icon} {volume}%",
+    "format-bluetooth": "{icon} {volume}%",
+    "format-bluetooth-muted": " {icon}",
+    "format-muted": "󰸈",
+    "format-icons": {
+      "headphone": "",
+      "hands-free": "",
+      "headset": "",
+      "phone": "",
+      "portable": "",
+      "car": "",
+      "default": [
+        "",
+        "",
+        ""
+      ]
+    },
+    "on-click": "$HOME/.config/hypr/scripts/volume mute",
+    "on-click-right": "pavucontrol -t 3",
+    "tooltip-format": "{icon} {desc} | {volume}%"
+  }
+}

@@ -1,0 +1,9 @@
+[Unit]
+Description=Check for broken units and containers every five minutes
+
+[Timer]
+OnStartupSec=2min
+OnUnitActiveSec=5min
+
+[Install]
+WantedBy=timers.target

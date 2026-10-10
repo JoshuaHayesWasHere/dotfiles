@@ -1,0 +1,49 @@
+# ~/.zshenv : environment for ALL zsh shells (login, interactive, scripts,
+# systemd user services). Interactive-only config lives in ~/.zshrc.
+
+# Auto-dedupe path-like arrays (replaces the old awk de-dupe hack in .zshrc)
+typeset -U path PATH fpath FPATH
+
+# Keep tool state out of ~ (XDG data/state dirs)
+export GOPATH="${XDG_DATA_HOME:-$HOME/.local/share}/go"
+
+# terraform: one shared provider cache, symlinked into each root's .terraform,
+# instead of a ~800M AWS provider copy per root per worktree. Terraform will
+# not create the directory itself, and init fails if it is missing.
+export TF_PLUGIN_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/terraform/plugin-cache"
+[ -d "$TF_PLUGIN_CACHE_DIR" ] || mkdir -p "$TF_PLUGIN_CACHE_DIR"
+
+# ssh-agent runs as a systemd user unit (ssh-agent.service). Point every shell
+# at its socket unless one is already set, such as a forwarded agent over SSH.
+export SSH_AUTH_SOCK="${SSH_AUTH_SOCK:-${XDG_RUNTIME_DIR:-/run/user/$UID}/ssh-agent.socket}"
+
+# lavish-axi: also listen on this machine's Tailscale address, so review pages
+# open from any device on the tailnet. The server has no login and can serve
+# local files, so this stays tailnet only; unset it on a tailnet you do not trust.
+export LAVISH_AXI_ALLOW_TAILSCALE=1
+
+# zsh history : set here (not zshrc) so no shell can recreate ~/.zsh_history.
+# Only interactive shells actually write it: SAVEHIST is set in ~/.zshrc.
+HISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/zsh/history"
+[ -d "${HISTFILE:h}" ] || mkdir -p "${HISTFILE:h}"
+
+# node : put nvm's newest installed version on PATH without sourcing nvm.sh,
+# so scripts and agent shells get node/npm/npx with zero startup cost.
+# Interactive shells re-source real nvm in ~/.zshrc, which overrides this.
+export NVM_DIR="$HOME/.nvm"
+_node_bin=("$NVM_DIR"/versions/node/*/bin(Nn[-1]))
+
+# PATH : later entries here take precedence (prepended)
+path=(
+    "$GOPATH/bin"
+    "$HOME/.local/bin"
+    "${XDG_DATA_HOME:-$HOME/.local/share}/mise/shims"
+    $_node_bin
+    $path
+)
+export PATH
+unset _node_bin
+
+# Portable helpers (aws switchers, clipboard, project shortcuts) : every shell,
+# agent sessions included. Interactive-only config stays in ~/.zshrc.
+[ -r "$HOME/dotfiles/zsh/functions.zsh" ] && source "$HOME/dotfiles/zsh/functions.zsh"
