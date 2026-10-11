@@ -105,7 +105,8 @@ This box is a daily dev machine and the home lab hub, so a few things watch it:
 |------|-------|------|
 | `hub-watch.timer` | `systemd/user/` | Every 5 minutes: failed units (system and user) and dead, restart-looping or unhealthy containers. One desktop notification when the set of problems changes, one when it clears |
 | `hub-watch-deep.timer` | `systemd/user/` | Daily: the same, plus every CRIT finding from `aa check` |
-| `docker-prune.timer` | `systemd/user/` | Weekly: dangling images and build cache older than a week |
+| `docker-prune.timer` | `systemd/user/` | Weekly: dangling images, build cache older than a week, and unused images built here that were last built or tagged over 14 days ago (`systemd/docker-prune-built`; pulled images are kept) |
+| `treehouse-prune.timer` | `systemd/user/` | Weekly: `treehouse prune --all --yes`, which removes only worktrees that are merged, clean and idle |
 | `earlyoom` | `/etc/default/earlyoom` | Kills the largest process before memory runs out, never the session or the hub daemons |
 | `smartd` | package default | Watches the NVMe's SMART health |
 | Docker log limits | `/etc/docker/daemon.json` | `max-size` 10m, 3 files, for containers created after the daemon next restarts |

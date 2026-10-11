@@ -1,0 +1,41 @@
+#!/bin/sh
+# docker-prune-built [-n|--dry-run]
+# Remove images that were built on this machine, are not used by any
+# container (running or stopped), and were last built or tagged more than
+# 14 days ago. Pulled images are kept however old they are: `docker image
+# prune -a --filter until=...` would also take the Playwright image between
+# test runs, and every suite would pull it again.
+#
+# Docker records where an image came from in `.Identity`; one that was pulled
+# has `.Identity.Pull`. Run from docker-prune.service.
+#
+#   -n, --dry-run   print the images that would go and remove nothing
+set -eu
+
+dry_run=0
+case "${1:-}" in
+    -n | --dry-run) dry_run=1 ;;
+    "") ;;
+    *) echo "docker-prune-built: unknown option: $1" >&2; exit 2 ;;
+esac
+
+cutoff=$(date -d '14 days ago' +%s)
+in_use=$(docker ps -aq --no-trunc | xargs -r docker inspect --format '{{.Image}}')
+
+stale=$(
+    docker image ls -aq --no-trunc | sort -u | xargs -r docker image inspect |
+        jq -r '.[] | select(.Identity.Pull == null)
+            | "\(.Id) \(.Metadata.LastTagTime // .Created) \(.RepoTags | join(","))"' |
+        while read -r id stamp tags; do
+            [ "$(date -d "$stamp" +%s)" -lt "$cutoff" ] || continue
+            ! printf '%s\n' "$in_use" | grep -qxF "$id" || continue
+            echo "$id ${tags:-<none>}"
+        done
+)
+
+[ -n "$stale" ] || exit 0
+if [ "$dry_run" -eq 1 ]; then
+    printf '%s\n' "$stale"
+else
+    printf '%s\n' "$stale" | cut -d' ' -f1 | xargs docker image rm
+fi
