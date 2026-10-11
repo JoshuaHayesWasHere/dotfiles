@@ -28,6 +28,9 @@ check "install succeeds on an empty home" "$repo/install"
 check "a file is linked" points_at "$HOME/.zshenv" zsh/zshenv
 check "a config directory is linked" points_at "$HOME/.config/hypr" config/hypr
 check "a systemd unit is linked" points_at "$HOME/.config/systemd/user/hub-watch.timer" systemd/user/hub-watch.timer
+for unit in treehouse-prune.timer treehouse-prune.service; do
+    check "$unit is linked" points_at "$HOME/.config/systemd/user/$unit" "systemd/user/$unit"
+done
 check "sddm is not linked under ~/.config" not test -e "$HOME/.config/sddm"
 check "the Claude settings are linked" points_at "$HOME/.claude/settings.json" claude/settings.json
 check "a second run changes nothing and exits 0" "$repo/install" --dry-run

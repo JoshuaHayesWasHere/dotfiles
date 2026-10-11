@@ -19,7 +19,7 @@ jobs:
         run: |
           shellcheck -s sh config/hypr/scripts/*
           shellcheck install tests/install.test.sh claude/statusline.sh claude/aws-signin-check.sh \
-            config/sddm/Xsetup openrgb/openrgb-restore-lighting systemd/hub-watch
+            config/sddm/Xsetup openrgb/openrgb-restore-lighting systemd/hub-watch systemd/docker-prune-built
 
       - name: zsh files parse
         run: for f in zsh/zshenv zsh/zshrc zsh/functions.zsh; do zsh -n "$f"; done

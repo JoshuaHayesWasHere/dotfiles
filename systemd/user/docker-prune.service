@@ -1,7 +1,8 @@
 [Unit]
-Description=Remove dangling Docker images and week-old build cache
+Description=Remove dangling Docker images, week-old build cache and stale locally built images
 
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/docker image prune -f
 ExecStart=/usr/bin/docker builder prune -f --filter until=168h
+ExecStart=%h/dotfiles/systemd/docker-prune-built
