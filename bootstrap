@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+# One-step setup for a fresh archinstall system (run as your normal sudo user):
+#
+#   curl -fsSL https://raw.githubusercontent.com/JoshuaHayesWasHere/dotfiles/arch/bootstrap | bash
+#
+# Safe to re-run. Follows docs/machine.md; anything interactive (gh auth,
+# wallpaper) is left for the end and printed as a reminder.
+set -euo pipefail
+
+REPO_URL=https://github.com/JoshuaHayesWasHere/dotfiles.git
+BRANCH=arch
+DOTS="$HOME/dotfiles"
+
+log() { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }
+
+[ "$(id -u)" -ne 0 ] || { echo "Run as your user, not root (makepkg refuses root)." >&2; exit 1; }
+sudo -v
+# Keep sudo alive for the whole run
+while true; do sudo -n true; sleep 50; kill -0 "$$" 2>/dev/null || exit; done &
+
+log "System update + base tools"
+sudo pacman -Syu --needed --noconfirm base-devel git curl
+
+log "yay"
+if ! command -v yay >/dev/null; then
+    tmp=$(mktemp -d)
+    git clone --depth 1 https://aur.archlinux.org/yay-bin.git "$tmp/yay"
+    (cd "$tmp/yay" && makepkg -si --noconfirm)
+    rm -rf "$tmp"
+fi
+
+log "Packages"
+pkgs=(
+    # shell + CLI
+    zsh ripgrep bat eza fd zoxide fzf starship jq uv mise git-delta
+    ttf-meslo-nerd fastfetch pokemon-colorscripts-git wl-clipboard aws-cli-v2
+    github-cli neovim tmux kitty btop
+    # desktop stack
+    hyprland waybar-git rofi swaync wlogout quickshell awww hyprlock hypridle
+    hyprpolkitagent grim slurp swappy playerctl wireplumber cliphist libnotify
+    libcanberra xdg-desktop-portal-hyprland kvantum qt5ct qt6ct sddm
+    # system
+    keyd earlyoom smartmontools reflector
+)
+yay -S --needed --noconfirm "${pkgs[@]}"
+
+log "Dotfiles"
+if [ -d "$DOTS/.git" ]; then
+    git -C "$DOTS" fetch origin && git -C "$DOTS" checkout "$BRANCH" && git -C "$DOTS" pull --ff-only
+else
+    git clone -b "$BRANCH" "$REPO_URL" "$DOTS"
+fi
+# --force moves archinstall's default ~/.bashrc etc. aside instead of failing
+"$DOTS/install" --force
+
+log "Oh My Zsh + plugins"
+if [ ! -d "$HOME/.oh-my-zsh" ]; then
+    RUNZSH=no CHSH=no KEEP_ZSHRC=yes sh -c \
+        "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+fi
+plugdir="$HOME/.oh-my-zsh/custom/plugins"
+[ -d "$plugdir/zsh-autosuggestions" ] || git clone --depth 1 https://github.com/zsh-users/zsh-autosuggestions "$plugdir/zsh-autosuggestions"
+[ -d "$plugdir/zsh-syntax-highlighting" ] || git clone --depth 1 https://github.com/zsh-users/zsh-syntax-highlighting "$plugdir/zsh-syntax-highlighting"
+
+log "NVM"
+[ -d "$HOME/.nvm" ] || PROFILE=/dev/null bash -c \
+    "$(curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh)"
+
+log "Claude Code"
+command -v claude >/dev/null || [ -x "$HOME/.local/bin/claude" ] || \
+    curl -fsSL https://claude.ai/install.sh | bash
+
+log "System links: keyd + SDDM (OpenRGB skipped)"
+sudo mkdir -p /etc/keyd /etc/sddm/scripts /etc/sddm.conf.d
+sudo ln -sfn "$DOTS/keyd/default.conf" /etc/keyd/default.conf
+sudo ln -sfn "$DOTS/config/sddm/Xsetup" /etc/sddm/scripts/Xsetup
+printf '[X11]\nDisplayCommand=/etc/sddm/scripts/Xsetup\n' | sudo tee /etc/sddm.conf.d/10-monitors.conf >/dev/null
+
+log "Services"
+sudo systemctl enable keyd earlyoom smartd reflector.timer sddm NetworkManager
+systemctl --user daemon-reload || true
+systemctl --user enable hub-watch.timer hub-watch-deep.timer ssh-agent.socket || true
+# docker-prune.timer is left off until Docker is installed
+
+log "Default shell"
+[ "$(getent passwd "$USER" | cut -d: -f7)" = /usr/bin/zsh ] || sudo chsh -s /usr/bin/zsh "$USER"
+
+log "Done. Reboot, then:"
+cat <<'EOF'
+  gh auth login && gh auth setup-git     # GitHub credentials
+  claude                                  # log in to Claude Code
+  Super+End                               # pick a wallpaper (~/Pictures/wallpapers)
+  Edit ~/dotfiles/claude/settings.json    # untracked, per-machine
+EOF
