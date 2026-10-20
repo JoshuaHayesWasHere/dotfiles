@@ -16,6 +16,7 @@ uses a fixed Catppuccin Mocha palette.
 | `rules.lua` | Window rules for installed apps |
 | `binds.lua` | Every keybind, each with a description |
 | `autostart.lua` | Processes started with the session |
+| `case-screen.lua` | The AIO pump-head LCD in desktop mode: output placement and the case-console screensaver window |
 | `hyprlock.conf`, `hypridle.conf` | Lock screen and its logind wiring |
 | `scripts/` | POSIX `sh` helpers, listed below |
 

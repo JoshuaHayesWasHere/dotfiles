@@ -1,6 +1,7 @@
 -- Keybinds. Every bind carries a description; scripts/keybinds turns those into
 -- the cheat sheet (Super+Shift+K), so the two can never drift apart.
 local workspaces = require("workspaces")
+local case_screen = require("case-screen")
 
 local SCRIPTS = CONFIG_DIR .. "/scripts/"
 local TERMINAL = "kitty"
@@ -112,6 +113,7 @@ bind("SUPER + CTRL + bracketleft", hl.dsp.window.move({ workspace = "r-1", follo
 -- Monitors --------------------------------------------------------------------
 bind("SUPER + SHIFT + M", workspaces.swap_with_next_monitor, "Swap windows with the next monitor")
 bind("SUPER + SHIFT + L", workspaces.toggle_dock, "Toggle dock mode (DP-3 only)")
+bind("SUPER + Escape", case_screen.rescue, "Emergency: back to the main monitor, off the AIO screen")
 
 -- Audio and media -------------------------------------------------------------
 local held = { locked = true, repeating = true }
