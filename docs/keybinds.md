@@ -116,6 +116,7 @@ Do not edit by hand: change `config/hypr/binds.lua`, then regenerate with
 | `V` | Dictate: release to type |
 | `Super + Shift + V` | Dictate: correct the last dictation |
 | `Super + Ctrl + V` | Dictate: discard the recording |
+| `Super + Alt + D` | Dictate: press to start, press again to type |
 | `Super + Print` | Screenshot: everything |
 | `Super + Shift + Print` | Screenshot: select an area |
 | `Alt + Print` | Screenshot: active window |
