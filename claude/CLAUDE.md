@@ -19,32 +19,26 @@
 - **Ask before swarming.** Before dynamic workflows, ultracode, or anything that spawns a large batch of subagents, explain the trade-offs and cost and wait for explicit approval.
 - **Every interactive artifact can send itself back.** Any artifact with buttons, choices, or comment fields carries a "Send to firstmate" button (outside firstmate: "Send to Claude") that sends the page's current choices and notes to the agent on demand, through the `comments` capability's `sendToClaude`. The button only works while a session watches the page with auto-replies armed, so keep that watch live for as long as the page waits on an answer, and re-arm it after a restart or context reset.
 
-## Boot setup (dual-boot Arch + Windows, UEFI)
+## Boot setup (UEFI, systemd-boot, no GRUB)
 
-**Do not touch GRUB.** `/etc/default/grub` and `/boot/grub/grub.cfg` exist and
-`\EFI\GRUB\grubx64.efi` is still an EFI entry (`Boot0000`), but GRUB is **not**
-what boots this machine. Editing it changes nothing.
-
-- **Bootloader: systemd-boot** (`Boot0001` "Linux Boot Manager",
-  `\EFI\systemd\systemd-bootx64.efi`). ESP is mounted at **`/efi`** (not `/boot/efi`).
-- **Arch boots as a UKI**: `/efi/EFI/Linux/arch-linux.efi`, a single signed
-  unified kernel image. The previous build is kept as `arch-linux.efi.bak` and is
-  also signed, so it stays bootable as a fallback entry.
-- **Kernel cmdline lives in `/etc/kernel/cmdline`**, *not* in any GRUB file. It is
-  baked into the UKI's `.cmdline` section at build time.
+- **Bootloader: systemd-boot** ("Linux Boot Manager", `\EFI\systemd\systemd-bootx64.efi`).
+  There is no GRUB on this machine. The ESP is mounted at **`/boot`** and is
+  root-only, so reading it needs `sudo`.
+- **Arch boots as a UKI**: `/boot/EFI/Linux/arch-linux.efi`, plus
+  `arch-linux-lts.efi` from `linux-lts` as the fallback entry. systemd-boot finds
+  UKIs there by itself; there are no loader entries to edit.
+- **Kernel cmdline lives in `/etc/kernel/cmdline`**, baked into each UKI's
+  `.cmdline` section at build time.
 - **To change kernel parameters**: edit `/etc/kernel/cmdline`, then rebuild with
-  `sudo mkinitcpio -P` (preset: `/etc/mkinitcpio.d/linux.preset`, `default_uki=`).
+  `sudo mkinitcpio -P` (presets: `/etc/mkinitcpio.d/linux{,-lts}.preset`, `default_uki=`).
   A reboot is required.
-- **Secure Boot is enabled** with user-enrolled keys managed by **`sbctl`**.
-  A mkinitcpio **post hook** (`/usr/lib/initcpio/post/sbctl`, not `/etc/initcpio/post/`)
-  signs the UKI automatically on every rebuild. Note the UKI is *not* in
-  `sbctl list-files`, so the pacman hook alone would not cover it; the mkinitcpio
-  post hook is what does. Confirm with `sudo sbctl verify` before rebooting.
-- **Windows** is `Boot0002` on its own ESP partition; nothing Arch-side touches it.
+- **Secure Boot is off.** Nothing is signed and `sbctl` is not installed.
+- **Windows**, when installed, lives on its own drive with its own ESP; nothing
+  Arch-side touches it. The zsh `windows` helper picks the first
+  "Windows Boot Manager" entry in `efibootmgr`.
 
 Verify what actually booted with `sudo bootctl list` / `sudo efibootmgr -v`, and
-compare `/proc/cmdline` against `/etc/kernel/cmdline`: if a parameter is in
-`/proc/cmdline` but absent from the GRUB config, that is the tell that GRUB is unused.
+compare `/proc/cmdline` against `/etc/kernel/cmdline`.
 
 ## Maintaining this file
 

@@ -5,12 +5,12 @@
 #   ./install             link everything under $HOME
 #   ./install --dry-run   show what would change and change nothing; exits 1
 #                         when something would, so it doubles as a drift check
-#   ./install --system    also link the files that live under /etc and
-#                         /usr/local (keyd, SDDM, OpenRGB), through sudo
+#   ./install --system    also link the files that live under /etc (keyd,
+#                         SDDM), through sudo
 #   ./install --force     move a conflicting file aside to <name>.bak.<time>
 #                         instead of skipping it
 #
-# Packages are not installed here; docs/machine.md lists them.
+# Packages are not installed here; bootstrap installs them.
 set -eu
 
 REPO=$(cd "$(dirname "$0")" && pwd -P)
@@ -114,10 +114,6 @@ if [ "$system" -eq 1 ]; then
     [ "$(id -u)" -eq 0 ] || as_root=1
     link keyd/default.conf /etc/keyd/default.conf
     link config/sddm/Xsetup /etc/sddm/scripts/Xsetup
-    link openrgb/default.orp /etc/openrgb/default.orp
-    link openrgb/openrgb-restore-lighting /usr/local/bin/openrgb-restore-lighting
-    link openrgb/openrgb.service.d/profile.conf /etc/systemd/system/openrgb.service.d/profile.conf
-    link openrgb/openrgb.service.d/apply-lighting.conf /etc/systemd/system/openrgb.service.d/apply-lighting.conf
 fi
 
 echo "$linked in place, $pending to link, $conflicts skipped"

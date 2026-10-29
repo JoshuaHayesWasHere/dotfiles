@@ -17,7 +17,7 @@ hl.on("hyprland.start", function()
     -- Wallpaper and shell (bar, overview) belong to this compositor instance.
     hl.exec_cmd("awww-daemon --format xrgb")
     hl.exec_cmd(SCRIPTS .. "wallpaper restore")
-    for _, output in ipairs({ "dp2", "dp3", "dp1" }) do
+    for _, output in ipairs({ "dp4", "dp6", "dp5", "hdmi1" }) do
         hl.exec_cmd("waybar -c $HOME/.config/waybar/per-monitor/" .. output .. ".jsonc")
     end
     hl.exec_cmd("qs")
@@ -42,4 +42,7 @@ hl.on("hyprland.start", function()
     -- Clipboard history.
     hl.exec_cmd("wl-paste --type text --watch cliphist store")
     hl.exec_cmd("wl-paste --type image --watch cliphist store")
+
+    -- T3 Code, so its server is up for remote clients without a manual start.
+    hl.exec_cmd("t3code-nightly")
 end)

@@ -4,7 +4,7 @@
 # scripts, and the snapshot Claude Code sources before each command). So
 # agent/automation shells already have every tool on PATH: they want none
 # of the interactive weight below (Oh My Zsh + ~200 git aliases, plugins,
-# nvm.sh, Starship, the greeting). Bail out before any of it.
+# Starship, the greeting). Bail out before any of it.
 [[ -n "$CLAUDECODE$AI_AGENT" ]] && return
 
 # Oh My Zsh
@@ -29,14 +29,11 @@ source $ZSH/oh-my-zsh.sh
 # Starship prompt (replaces OMZ theme; keeps plugins)
 command -v starship >/dev/null 2>&1 && eval "$(starship init zsh)"
 
-# History: HISTFILE is set in ~/.zshenv (XDG state dir)
+# History: HISTFILE is set in ~/.zshenv (XDG state dir). Oh My Zsh already
+# sets SHARE_HISTORY, which also appends each command as it runs.
 HISTSIZE=10000
 SAVEHIST=10000
-setopt HIST_IGNORE_DUPS
 setopt HIST_IGNORE_ALL_DUPS
-setopt SHARE_HISTORY
-setopt INC_APPEND_HISTORY
-setopt appendhistory
 
 # Prefix-based history search
 bindkey '^[[A' history-search-backward
@@ -84,7 +81,8 @@ alias cl='claude'
 # ~/.local/bin; drop the alias at that point.
 alias aa='uv run --project "$HOME/repos/archaholics-anonymous" aa'
 alias hydra-lab='uv run --project "$HOME/repos/hydra-lab" hydra-lab'
-alias pmeter='uv run --project "$HOME/repos/pipeline" pmeter'
+alias fanmode='uv run --project "$HOME/desk/fanmode" fanmode'
+alias case-console='uv run --project "$HOME/repos/case-console" case-console'
 
 # lavish-axi is npm-linked from ~/repos/lavish-axi, which is not part of
 # firstmate's managed fleet, so nothing pulls it forward automatically.
@@ -121,18 +119,17 @@ bios() {
         systemctl reboot --firmware-setup
 }
 
-# NVM
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-
-# mise: per-directory tool versions and environment (mise.toml). Interactive
-# shells get the full hook; scripts and agent shells use the shims on PATH
-# (see ~/.zshenv).
+# mise: global tool versions (Node, from ~/.config/mise/config.toml) plus
+# per-directory ones (mise.toml). Interactive shells get the full hook;
+# scripts and agent shells use the shims on PATH (see ~/.zshenv).
 command -v mise >/dev/null 2>&1 && eval "$(mise activate zsh)"
 
 # zoxide: must initialize last so its hooks aren't overridden by anything
-# loaded later (NVM, PATH-dependent tools, etc.)
+# loaded later (mise, PATH-dependent tools, etc.)
 if command -v zoxide >/dev/null 2>&1; then
     alias ci='cdi'
     eval "$(zoxide init --cmd cd zsh)"
 fi
+
+# Vite+ bin (https://viteplus.dev)
+. "/home/joshua/.config/vite-plus/env"

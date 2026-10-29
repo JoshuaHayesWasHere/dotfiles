@@ -13,16 +13,9 @@ named in each bullet has the full rationale.
   is intentional. See "How the zsh files split" in `docs/shell.md`. `zshrc` returns early for agent
   shells on purpose. Do not move interactive weight into `zshenv`, and do not add
   aliases that shadow coreutils anywhere an agent shell would source them.
-- **GRUB is not the bootloader on this machine.** systemd-boot is. Editing
-  `/etc/default/grub` changes nothing. See the "Boot setup" section in the global
+- **The bootloader is systemd-boot booting UKIs**, and kernel parameters live in
+  `/etc/kernel/cmdline`. See the "Boot setup" section in the global
   `~/.claude/CLAUDE.md` before touching anything boot-related.
-- **OpenRGB's live setup is four symlinks into `openrgb/` here**: the profile
-  `/etc/openrgb/default.orp`, the `ExecStartPost` hook
-  `/usr/local/bin/openrgb-restore-lighting`, and both `openrgb.service.d`
-  drop-ins. The GUI rewrites and replaces the profile, which clobbers that
-  symlink. Root executes the hook script out of this user-writable repo, so
-  treat it as privileged. See `docs/openrgb.md` for the drift check and for the
-  detection-runs-once failure mode that silently kills all HID lighting.
 - **Hyprland is configured in Lua** (`config/hypr`, see its README). Under a
   Lua config the legacy `hyprctl dispatch workspace 3` form does not parse:
   anything that dispatches from outside (waybar, swaync, wlogout, quickshell,

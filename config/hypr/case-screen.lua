@@ -101,9 +101,17 @@ function M.rescue()
 end
 
 -- case-console.service (the page server) is enabled in systemd; the window
--- needs the Wayland session, so it starts with Hyprland.
-hl.on("hyprland.start", function()
-    hl.exec_cmd("systemctl --user start case-console-screen.service")
-end)
+-- needs the Wayland session, so it starts with Hyprland. It only runs while the
+-- desktop-mode output exists: with the AIO in LCD mode there is no output, and
+-- the window would otherwise open on the main monitor.
+local function sync_screen()
+    local verb = hl.get_monitor(OUTPUT) and "start" or "stop"
+    hl.exec_cmd("systemctl --user " .. verb .. " case-console-screen.service")
+end
+
+hl.on("hyprland.start", sync_screen)
+for _, event in ipairs({ "monitor.added", "monitor.removed" }) do
+    hl.on(event, function() hl.timer(sync_screen, { timeout = 500, type = "oneshot" }) end)
+end
 
 return M

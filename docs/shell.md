@@ -8,9 +8,9 @@ Three files, loaded in different circumstances. This split is deliberate:
 
 | File | Loads for | Holds |
 |------|-----------|-------|
-| `zsh/zshenv` | **every** zsh: login, scripts, agent/automation shells | `GOPATH`, `TF_PLUGIN_CACHE_DIR`, `NVM_DIR`, `HISTFILE`, `PATH`, then sources `functions.zsh` |
+| `zsh/zshenv` | **every** zsh: login, scripts, agent/automation shells | `GOPATH`, `TF_PLUGIN_CACHE_DIR`, `HISTFILE`, `PATH` (including mise's shims, which carry Node), then sources `functions.zsh` |
 | `zsh/functions.zsh` | **every** zsh (via zshenv) | `awslogin` & friends, `clip`/`dclip`, `winnifred` |
-| `zsh/zshrc` | **interactive human shells only** | Oh My Zsh + plugins, Starship, `nvm.sh`, zoxide, greeting, the eza/bat/rg aliases |
+| `zsh/zshrc` | **interactive human shells only** | Oh My Zsh + plugins, Starship, `mise activate`, zoxide, greeting, the eza/bat/rg aliases |
 
 `zshrc` returns early when `$CLAUDECODE` or `$AI_AGENT` is set. Claude Code snapshots
 the shell before every command it runs, and inheriting the full interactive
@@ -55,7 +55,6 @@ Agent shells get plain coreutils and call `eza`/`bat`/`rg` by name.
 | `winnifred` | `uv run ~/repos/Winnifred/scripts/run-local.py` (function, args pass through) |
 | `aa` | `uv run --project ~/repos/archaholics-anonymous aa`, an alias until the tool has earned a spot on `PATH`; graduating means `uv tool install --editable` (shim into `~/.local/bin`) and dropping the alias |
 | `hydra-lab` | `uv run --project ~/repos/hydra-lab hydra-lab`, same alias-until-graduated pattern as `aa` |
-| `pmeter` | `uv run --project ~/repos/pipeline pmeter`, same pattern; the Claude Code `Stop` hooks call it too |
 | `lavish-axi-update` | Pull and rebuild the npm-linked `~/repos/lavish-axi` checkout, which nothing else updates |
 | `fm` | Attach to the `firstmate` tmux session, creating it first if it is not up (function in `functions.zsh`) |
 | `cl` | `claude` (launch Claude Code) |
