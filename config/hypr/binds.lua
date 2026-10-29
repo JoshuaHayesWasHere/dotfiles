@@ -149,6 +149,10 @@ bind("SUPER + CTRL + V", function()
     dictating = false
     hl.exec_cmd("voxtype record cancel")
 end, "Dictate: discard the recording")
+-- Hands-free: one press starts a recording, the next stops it and types it.
+-- voxtype tracks this state itself, so `dictating` stays false and the V
+-- release bind above leaves it alone.
+bind("SUPER + ALT + D", run("voxtype record toggle"), "Dictate: press to start, press again to type")
 
 -- Screenshots -----------------------------------------------------------------
 bind("SUPER + Print", script("screenshot full"), "Screenshot: everything")
