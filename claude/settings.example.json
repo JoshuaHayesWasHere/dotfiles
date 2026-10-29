@@ -87,26 +87,6 @@
           }
         ]
       }
-    ],
-    "SubagentStop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "uv run --quiet --project \"$HOME/repos/pipeline\" pmeter hook subagent-stop 2>/dev/null || true"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "uv run --quiet --project \"$HOME/repos/pipeline\" pmeter hook stop 2>/dev/null || true"
-          }
-        ]
-      }
     ]
   },
   "statusLine": {

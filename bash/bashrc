@@ -11,3 +11,6 @@ PS1='[\u@\h \W]\$ '
 
 # Starship prompt (overrides PS1 above when installed)
 command -v starship >/dev/null 2>&1 && eval "$(starship init bash)"
+
+# Vite+ bin (https://viteplus.dev)
+. "/home/joshua/.config/vite-plus/env"

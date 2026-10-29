@@ -42,11 +42,10 @@ The screenshots are taken on an off-screen copy of the desktop; [docs/screenshot
 bash/        bashrc, bash_profile
 claude/      Claude Code status line, example settings, global CLAUDE.md
 config/      ~/.config subtrees (Hyprland, waybar, kitty, nvim, etc.), plus sddm/Xsetup
-docs/        keybinds, shell, machine setup, OpenRGB
+docs/        keybinds, shell, machine setup
 git/         gitconfig, global ignore
 gtk/         gtkrc-2.0 (GTK2; GTK3/4 live under config/)
 keyd/        keyd remap config (symlinked to /etc/keyd/)
-openrgb/     RGB profile, restore hook, systemd drop-ins (all symlinked out)
 shell/       dircolors
 starship/    starship.toml (prompt)
 systemd/     user timers (hub-watch, docker-prune) and the hub-watch script
@@ -57,55 +56,26 @@ zsh/         zshenv (env + PATH), zshrc (interactive only), functions.zsh (porta
 
 ## Setup
 
-Clone the repo and create symlinks:
+On a fresh [archinstall](https://wiki.archlinux.org/title/Archinstall) system
+(systemd-boot with a unified kernel image), one command installs the packages,
+links everything, and enables the services:
 
 ```bash
-git clone https://github.com/JoshuaHayesWasHere/dotfiles.git ~/dotfiles
-cd ~/dotfiles && git checkout arch
-
-# Shell + git
-mkdir -p ~/.config/git
-ln -sf ~/dotfiles/zsh/zshenv         ~/.zshenv
-ln -sf ~/dotfiles/zsh/zshrc          ~/.zshrc
-ln -sf ~/dotfiles/bash/bashrc        ~/.bashrc
-ln -sf ~/dotfiles/bash/bash_profile  ~/.bash_profile
-ln -sf ~/dotfiles/git/config         ~/.config/git/config
-ln -sf ~/dotfiles/git/ignore         ~/.config/git/ignore
-ln -sf ~/dotfiles/shell/dircolors    ~/.dircolors
-ln -sf ~/dotfiles/gtk/gtkrc-2.0      ~/.gtkrc-2.0
-
-# Starship prompt
-mkdir -p ~/.config
-ln -sf ~/dotfiles/starship/starship.toml ~/.config/starship.toml
-
-# tmux
-mkdir -p ~/.config/tmux
-ln -sf ~/dotfiles/tmux/tmux.conf ~/.config/tmux/tmux.conf
-
-# systemd user units: hub watcher, weekly Docker prune, ssh-agent
-mkdir -p ~/.config/systemd/user
-for u in ~/dotfiles/systemd/user/*; do ln -sfn "$u" ~/.config/systemd/user/; done
-systemctl --user daemon-reload
-systemctl --user enable --now hub-watch.timer hub-watch-deep.timer docker-prune.timer ssh-agent.socket
-
-# Claude Code
-mkdir -p ~/.claude
-cp -n ~/dotfiles/claude/settings.example.json ~/dotfiles/claude/settings.json  # then make it yours; the copy is untracked
-ln -sf ~/dotfiles/claude/settings.json  ~/.claude/settings.json
-ln -sf ~/dotfiles/claude/statusline.sh  ~/.claude/statusline.sh
-ln -sf ~/dotfiles/claude/CLAUDE.md      ~/.claude/CLAUDE.md
-
-# ~/.config: symlink each tracked subtree
-mkdir -p ~/.config
-for d in hypr waybar rofi wlogout swaync swappy kitty nvim btop cava \
-         fastfetch qalculate Kvantum qt5ct qt6ct gtk-3.0 gtk-4.0 nwg-look \
-         nwg-displays xsettingsd Thunar quickshell fontconfig htop; do
-  ln -sfn ~/dotfiles/config/$d ~/.config/$d
-done
-ln -sf ~/dotfiles/config/mimeapps.list    ~/.config/mimeapps.list
-ln -sf ~/dotfiles/config/user-dirs.dirs   ~/.config/user-dirs.dirs
-ln -sf ~/dotfiles/config/user-dirs.locale ~/.config/user-dirs.locale
+curl -fsSL https://raw.githubusercontent.com/JoshuaHayesWasHere/dotfiles/arch/bootstrap | bash
 ```
+
+It is safe to re-run, and it prints the few interactive steps (GitHub and
+Claude Code sign-in, a wallpaper) at the end. On a machine that already has the
+packages, only link:
+
+```bash
+git clone -b arch https://github.com/JoshuaHayesWasHere/dotfiles.git ~/dotfiles
+~/dotfiles/install            # everything under $HOME; --dry-run reports drift
+~/dotfiles/install --system   # also /etc: keyd and the SDDM greeter layout
+```
+
+The live Claude Code settings start as a copy of `claude/settings.example.json`
+and stay untracked.
 
 ## More
 
@@ -114,8 +84,7 @@ ln -sf ~/dotfiles/config/user-dirs.locale ~/.config/user-dirs.locale
 | [docs/keybinds.md](docs/keybinds.md) | Every keybind, generated from the running compositor |
 | [config/hypr/README.md](config/hypr/README.md) | How the Hyprland config is organised, and how to test a change |
 | [docs/shell.md](docs/shell.md) | The zsh split, aliases and helper commands |
-| [docs/machine.md](docs/machine.md) | Packages, keyboard remap, login screen, health timers, git and SSH |
-| [docs/openrgb.md](docs/openrgb.md) | RGB lighting and its failure modes |
+| [docs/machine.md](docs/machine.md) | What `bootstrap` sets up and why: packages, keyboard remap, login screen, health timers, git and SSH |
 
 ## License
 

@@ -18,8 +18,8 @@ jobs:
       - name: Shell scripts pass shellcheck
         run: |
           shellcheck -s sh config/hypr/scripts/*
-          shellcheck install tests/install.test.sh claude/statusline.sh claude/aws-signin-check.sh \
-            config/sddm/Xsetup openrgb/openrgb-restore-lighting systemd/hub-watch
+          shellcheck bootstrap install tests/install.test.sh claude/statusline.sh \
+            claude/aws-signin-check.sh config/sddm/Xsetup systemd/hub-watch
 
       - name: zsh files parse
         run: for f in zsh/zshenv zsh/zshrc zsh/functions.zsh; do zsh -n "$f"; done

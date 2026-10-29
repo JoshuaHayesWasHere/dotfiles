@@ -3,3 +3,6 @@
 #
 
 [[ -f ~/.bashrc ]] && . ~/.bashrc
+
+# Vite+ bin (https://viteplus.dev)
+. "/home/joshua/.config/vite-plus/env"

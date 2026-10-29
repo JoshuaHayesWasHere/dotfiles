@@ -8,9 +8,10 @@ local ALWAYS = 5      -- 1..ALWAYS are always shown, the rest appear on demand
 
 -- Monitor name -> first workspace id minus one.
 M.offsets = {
-    ["DP-2"] = 0,     -- left, portrait: 1-10
-    ["DP-3"] = 10,    -- right: 11-20
-    ["DP-1"] = 20,    -- centre: 21-30
+    ["DP-4"] = 0,     -- left, portrait: 1-10
+    ["DP-6"] = 10,    -- right: 11-20
+    ["DP-5"] = 20,    -- centre: 21-30
+    ["HDMI-A-1"] = 30, -- the iGPU's HDMI port: 31-40
 }
 
 -- One rule per workspace binds it to its monitor. Workspaces above ALWAYS start
@@ -113,11 +114,11 @@ function M.swap_with_next_monitor()
     move_all(from_b, a.id)
 end
 
--- Dock mode: hand DP-1 and DP-2 to the docked laptop and keep working on DP-3.
--- Windows on the outgoing monitors are gathered onto DP-3 first. Toggling again
+-- Dock mode: hand DP-5 and DP-4 to the docked laptop and keep working on DP-6.
+-- Windows on the outgoing monitors are gathered onto DP-6 first. Toggling again
 -- re-enables them and re-applies monitors.lua. A config reload also restores
 -- every monitor.
-local DOCK_KEEP = "DP-3"
+local DOCK_KEEP = "DP-6"
 local docked = false
 
 function M.toggle_dock()

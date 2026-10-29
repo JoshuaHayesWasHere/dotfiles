@@ -62,6 +62,11 @@ hl.window_rule({
     move = { "monitor_w*0.68", "monitor_h*0.07" },
 })
 
+-- T3 Code sees through like kitty's background_opacity, but Hyprland fades the
+-- whole window, text included, since it draws an opaque background. Chromium
+-- stays fully opaque so the wallpaper never shows through.
+hl.window_rule({ name = "see-through-apps", match = { class = "^(com.t3tools.T3Code)$" }, opacity = "0.93" })
+
 -- Steam's secondary windows (friends list, settings) float; the main one tiles.
 hl.window_rule({ name = "steam-popups", match = { class = "^([Ss]team)$", title = "negative:^([Ss]team)$" }, float = true })
 
