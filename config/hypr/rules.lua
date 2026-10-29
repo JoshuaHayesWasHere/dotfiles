@@ -70,3 +70,7 @@ hl.window_rule({ name = "fullscreen-inhibits-idle", match = { fullscreen = true 
 
 -- Apps asking to maximise themselves are ignored; tiling decides the size.
 hl.window_rule({ name = "suppress-maximize", match = { class = ".*" }, suppress_event = "maximize" })
+
+-- voxtype's dictation panel fades in and out instead of popping; its alpha
+-- follows the "fade" animation in settings.lua, and blur stays off.
+hl.layer_rule({ name = "voxtype-osd", match = { namespace = "^(voxtype-osd)$" }, animation = "fade" })
