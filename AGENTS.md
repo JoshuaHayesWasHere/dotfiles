@@ -43,6 +43,10 @@ named in each bullet has the full rationale.
 - **Try a look change off-screen first.** `docs/screenshots/README.md` describes
   the headless test desktop the screenshots are taken on; it renders the config
   without touching the real session.
+- **The weekly Docker prune keeps pulled images on purpose.**
+  `systemd/docker-prune-built` removes only unused images built here, by
+  `.Identity.Pull` being absent. Do not swap it for `docker image prune -a
+  --filter until=...`: that takes the Playwright image between test runs.
 - **Shell helpers have a check.** After editing `zsh/functions.zsh`, run
   `zsh zsh/functions.test.zsh`. It stubs `aws`, so it never signs in for real.
 

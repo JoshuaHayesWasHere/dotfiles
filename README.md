@@ -49,7 +49,7 @@ keyd/        keyd remap config (symlinked to /etc/keyd/)
 openrgb/     RGB profile, restore hook, systemd drop-ins (all symlinked out)
 shell/       dircolors
 starship/    starship.toml (prompt)
-systemd/     user timers (hub-watch, docker-prune) and the hub-watch script
+systemd/     user timers (hub-watch, docker-prune, treehouse-prune) and their scripts
 tests/       tests for the installer
 tmux/        tmux.conf (crew session for firstmate, Catppuccin Frappe to match kitty)
 zsh/         zshenv (env + PATH), zshrc (interactive only), functions.zsh (portable helpers)
@@ -82,11 +82,11 @@ ln -sf ~/dotfiles/starship/starship.toml ~/.config/starship.toml
 mkdir -p ~/.config/tmux
 ln -sf ~/dotfiles/tmux/tmux.conf ~/.config/tmux/tmux.conf
 
-# systemd user units: hub watcher, weekly Docker prune, ssh-agent
+# systemd user units: hub watcher, weekly Docker and treehouse prunes, ssh-agent
 mkdir -p ~/.config/systemd/user
 for u in ~/dotfiles/systemd/user/*; do ln -sfn "$u" ~/.config/systemd/user/; done
 systemctl --user daemon-reload
-systemctl --user enable --now hub-watch.timer hub-watch-deep.timer docker-prune.timer ssh-agent.socket
+systemctl --user enable --now hub-watch.timer hub-watch-deep.timer docker-prune.timer treehouse-prune.timer ssh-agent.socket
 
 # Claude Code
 mkdir -p ~/.claude

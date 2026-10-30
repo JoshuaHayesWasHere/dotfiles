@@ -1,0 +1,6 @@
+[Unit]
+Description=Remove treehouse worktrees that are merged, clean and idle
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/share/go/bin/treehouse prune --all --yes
