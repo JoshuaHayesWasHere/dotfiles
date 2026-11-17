@@ -4,8 +4,8 @@ return {
 
   config = function()
     require('lualine').setup({
-        theme = 'gruvbox',
         options = {
+          theme = 'catppuccin-nvim',
           icons_enabled = false,
           component_separators = '',
           section_separators = '',
