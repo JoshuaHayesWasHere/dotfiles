@@ -1,0 +1,3 @@
+#!/bin/sh
+# awslogin is a zsh function (functions.zsh, loaded by ~/.zshenv): this reaches it from any shell.
+exec zsh -c 'awslogin "$@"' awslogin "$@"

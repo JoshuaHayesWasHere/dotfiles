@@ -17,11 +17,6 @@ export TF_PLUGIN_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/terraform/plugin-cac
 # at its socket unless one is already set, such as a forwarded agent over SSH.
 export SSH_AUTH_SOCK="${SSH_AUTH_SOCK:-${XDG_RUNTIME_DIR:-/run/user/$UID}/ssh-agent.socket}"
 
-# lavish-axi: also listen on this machine's Tailscale address, so review pages
-# open from any device on the tailnet. The server has no login and can serve
-# local files, so this stays tailnet only; unset it on a tailnet you do not trust.
-export LAVISH_AXI_ALLOW_TAILSCALE=1
-
 
 # zsh history : set here (not zshrc) so no shell can recreate ~/.zsh_history.
 # Only interactive shells actually write it: SAVEHIST is set in ~/.zshrc.

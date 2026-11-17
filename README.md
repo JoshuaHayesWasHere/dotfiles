@@ -50,7 +50,7 @@ shell/       dircolors
 starship/    starship.toml (prompt)
 systemd/     user timers (hub-watch, docker-prune) and the hub-watch script
 tests/       tests for the installer
-tmux/        tmux.conf (crew session for firstmate, Catppuccin Frappe to match kitty)
+tmux/        tmux.conf (Catppuccin Frappe to match kitty)
 zsh/         zshenv (env + PATH), zshrc (interactive only), functions.zsh (portable helpers)
 ```
 
@@ -74,8 +74,9 @@ git clone -b arch https://github.com/JoshuaHayesWasHere/dotfiles.git ~/dotfiles
 ~/dotfiles/install --system   # also /etc: keyd and the SDDM greeter layout
 ```
 
-The live Claude Code settings start as a copy of `claude/settings.example.json`
-and stay untracked.
+The live Claude Code settings are an untracked file in a separate repo, linked
+in at `~/.claude/settings.json`; `install` leaves that link alone. A fresh
+machine without one starts from an untracked copy of `claude/settings.example.json`.
 
 ## More
 

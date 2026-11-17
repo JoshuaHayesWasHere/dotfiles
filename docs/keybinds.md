@@ -12,7 +12,6 @@ Do not edit by hand: change `config/hypr/binds.lua`, then regenerate with
 | Keys | Action |
 |------|--------|
 | `Super + Return` | Terminal |
-| `Super + Shift + Return` | Terminal attached to the firstmate tmux session |
 | `Super + E` | File manager |
 | `Super + B` | Browser |
 | `Super + D` | App launcher |

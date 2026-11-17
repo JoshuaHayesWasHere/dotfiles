@@ -69,6 +69,10 @@ link() {
 }
 
 # Shell, git, prompt, tmux
+link bin/winnifred "$HOME/.local/bin/winnifred"
+link bin/clip "$HOME/.local/bin/clip"
+link bin/awslogin "$HOME/.local/bin/awslogin"
+link bin/codex "$HOME/.local/bin/codex"
 link zsh/zshenv "$HOME/.zshenv"
 link zsh/zshrc "$HOME/.zshrc"
 link bash/bashrc "$HOME/.bashrc"
@@ -95,18 +99,21 @@ for unit in "$REPO"/systemd/user/*; do
     link "systemd/user/$(basename "$unit")" "$CONFIG/systemd/user/$(basename "$unit")"
 done
 
-# Claude Code. The live settings file is private to a machine, so it starts as
-# a copy of the published example and is never tracked.
-if [ ! -e "$REPO/claude/settings.json" ]; then
-    if [ "$dry_run" -eq 1 ]; then
-        echo "would copy claude/settings.example.json to claude/settings.json"
-        pending=$((pending + 1))
-    else
-        cp "$REPO/claude/settings.example.json" "$REPO/claude/settings.json"
-        echo "copied    claude/settings.example.json to claude/settings.json"
+# Claude Code. The live settings are private and tracked outside this repo, so
+# an existing ~/.claude/settings.json (usually a link into that private repo) is
+# left alone. A fresh machine starts from an untracked copy of the example.
+if [ ! -e "$HOME/.claude/settings.json" ]; then
+    if [ ! -e "$REPO/claude/settings.json" ]; then
+        if [ "$dry_run" -eq 1 ]; then
+            echo "would copy claude/settings.example.json to claude/settings.json"
+            pending=$((pending + 1))
+        else
+            cp "$REPO/claude/settings.example.json" "$REPO/claude/settings.json"
+            echo "copied    claude/settings.example.json to claude/settings.json"
+        fi
     fi
+    [ -e "$REPO/claude/settings.json" ] && link claude/settings.json "$HOME/.claude/settings.json"
 fi
-[ -e "$REPO/claude/settings.json" ] && link claude/settings.json "$HOME/.claude/settings.json"
 link claude/statusline.sh "$HOME/.claude/statusline.sh"
 link claude/CLAUDE.md "$HOME/.claude/CLAUDE.md"
 

@@ -22,8 +22,7 @@ The parts that are easy to get wrong:
   `zsh-syntax-highlighting` are cloned into `~/.oh-my-zsh/custom/plugins/`.
 - **Node comes from mise**, not a package. `config/mise/config.toml` names the
   version and mise's shims put it on `PATH` for every shell, agent shells
-  included. Global npm tools install into it, among them `gh-axi`, which a
-  Claude Code `SessionStart` hook runs.
+  included. Global npm tools install into it.
 - **Dictation is its own repo.** `Super+V` and the autostart call `voxtype` and
   `dictation`, which `~/repos/dictation` installs and documents. Without it the
   bind does nothing and the rest of the session is unaffected.

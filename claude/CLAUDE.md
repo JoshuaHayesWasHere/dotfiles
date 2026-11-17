@@ -5,7 +5,7 @@
 - **Arch Linux**: use **`yay`** (handles repo + AUR, calls sudo itself): `yay -Q…` to query, `yay -S` to install.
 - **Hyprland** (Wayland) + **zsh**. Read compositor state with `hyprctl -j …` (`dispatch`/`reload` mutate).
 - Prefer built-in **Read/Grep/Glob** over shell `cat`/`grep`/`ls`: structured results, no wasted context.
-- Agent shells are minimal by design: `~/.zshrc` returns early on `$CLAUDECODE`, so no Oh My Zsh and no eza/bat/rg aliases, just plain coreutils, and `rg`/`fd`/`bat`/`jq`/`node`/`uv` are on PATH under their real names. Env, PATH and the shared helpers (`awslogin`, `winnifred`, `clip`) come from `~/.zshenv`.
+- Agent shells are minimal by design: `~/.zshrc` returns early on `$CLAUDECODE`, so no Oh My Zsh and no eza/bat/rg aliases, just plain coreutils, and `rg`/`fd`/`bat`/`jq`/`node`/`uv` are on PATH under their real names. Agents run bash, so write bash: Claude through `CLAUDE_CODE_SHELL` in `~/.claude/settings.json`, Codex through the `~/dotfiles/bin/codex` wrapper T3 Code launches. The account and terminals stay on zsh. Env and PATH come from whatever started the agent (T3 Code here), and `awslogin`, `winnifred` and `clip` are commands in `~/.local/bin`, from `~/dotfiles/bin`.
 
 ## Working style
 
@@ -17,7 +17,6 @@
 - **Do not step around breakage.** A lint error, failing test, or flaky test you did not cause still gets fixed or flagged, not silently ignored.
 - **Do not hand-edit generated files** such as CHANGELOG.md, tool-regenerated lockfiles, or anything marked auto-generated.
 - **Ask before swarming.** Before dynamic workflows, ultracode, or anything that spawns a large batch of subagents, explain the trade-offs and cost and wait for explicit approval.
-- **Every interactive artifact can send itself back.** Any artifact with buttons, choices, or comment fields carries a "Send to firstmate" button (outside firstmate: "Send to Claude") that sends the page's current choices and notes to the agent on demand, through the `comments` capability's `sendToClaude`. The button only works while a session watches the page with auto-replies armed, so keep that watch live for as long as the page waits on an answer, and re-arm it after a restart or context reset.
 
 ## Boot setup (UEFI, systemd-boot, no GRUB)
 

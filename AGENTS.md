@@ -5,7 +5,8 @@ named in each bullet has the full rationale.
 
 - **This repo is public.** Names of private repos, AWS organizations, profiles
   and hosts stay out of it. AWS organizations live in the untracked
-  `~/.config/aws-orgs.zsh`; the live `claude/settings.json` is gitignored and
+  `~/.config/aws-orgs.zsh`; the live Claude settings are an untracked file in
+  another repo, linked at `~/.claude/settings.json`, and
   `claude/settings.example.json` is the published copy, so mirror any setting
   worth showing there by hand. Stage files by name: `git add <dir>` has swept
   runtime state into a commit before.
