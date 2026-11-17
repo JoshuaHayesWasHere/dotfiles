@@ -5,7 +5,6 @@
 # this file free of anything that needs Oh My Zsh, a prompt, or a TTY.
 
 # ── Wayland clipboard ────────────────────────────────────────────────
-clip() { wl-copy "$@"; }
 # Run a command, print "$ cmd" + its output, copy both to the primary selection
 dclip() { { print -- "\$ ${(q-)@}"; "$@" 2>&1 } | tee >(wl-copy --primary); return ${pipestatus[1]} }
 
@@ -73,21 +72,4 @@ awswho()   { aws sts get-caller-identity --profile "${AWS_PROFILE:-default}"; }
 awslogout() { aws sso logout >/dev/null 2>&1; unset AWS_PROFILE; }
 
 # ── Project shortcuts ───────────────────────────────────────────────
-winnifred() { uv run ~/repos/Winnifred/scripts/run-local.py "$@"; }
 
-# ── firstmate crew session ───────────────────────────────────────────
-# Attach to the tmux session the firstmate crew lives in, creating it with the
-# first mate at the helm if it is not up yet. Crew workers appear as sibling
-# fm-<task-id> windows, so prefix + w is the whole fleet. Safe from inside tmux.
-fm() {
-  local session=firstmate win
-  if ! tmux has-session -t "$session" 2>/dev/null; then
-    win=$(tmux new-session -d -s "$session" -n helm -c "$HOME/repos/firstmate" -P -F '#{window_id}') || return 1
-    tmux send-keys -t "$win" 'claude' C-m
-  fi
-  if [[ -n "$TMUX" ]]; then
-    tmux switch-client -t "$session"
-  else
-    tmux attach -t "$session"
-  fi
-}

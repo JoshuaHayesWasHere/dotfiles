@@ -100,9 +100,8 @@ plugdir="$HOME/.oh-my-zsh/custom/plugins"
 
 log "Node"
 # mise installs the Node named in config/mise/config.toml (linked above) and
-# shims it onto PATH; Claude Code's SessionStart hook runs gh-axi
+# shims it onto PATH
 mise install
-mise exec -- npm install -g gh-axi
 
 log "Claude Code"
 command -v claude >/dev/null || [ -x "$HOME/.local/bin/claude" ] || \
@@ -132,5 +131,5 @@ cat <<'EOF'
   gh auth login && gh auth setup-git     # GitHub credentials
   claude                                  # log in to Claude Code
   Super+End                               # pick a wallpaper (~/Pictures/wallpapers)
-  Edit ~/dotfiles/claude/settings.json    # untracked, per-machine
+  Edit ~/.claude/settings.json            # private, per-machine
 EOF

@@ -23,7 +23,6 @@ end
 
 -- Applications ----------------------------------------------------------------
 bind("SUPER + Return", run(TERMINAL), "Terminal")
-bind("SUPER + SHIFT + Return", run(TERMINAL .. " zsh -ic fm"), "Terminal attached to the firstmate tmux session")
 bind("SUPER + E", run(FILES), "File manager")
 bind("SUPER + B", run('xdg-open "https://"'), "Browser")
 bind("SUPER + D", run("pkill rofi || rofi -show drun -modi drun,filebrowser,run,window"), "App launcher")

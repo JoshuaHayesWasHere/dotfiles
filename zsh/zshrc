@@ -83,10 +83,8 @@ alias aa='uv run --project "$HOME/repos/archaholics-anonymous" aa'
 alias hydra-lab='uv run --project "$HOME/repos/hydra-lab" hydra-lab'
 alias fanmode='uv run --project "$HOME/desk/fanmode" fanmode'
 alias case-console='uv run --project "$HOME/repos/case-console" case-console'
+alias t3-fork='uv run --project "$HOME/repos/t3-fork/fork" t3-fork'
 
-# lavish-axi is npm-linked from ~/repos/lavish-axi, which is not part of
-# firstmate's managed fleet, so nothing pulls it forward automatically.
-alias lavish-axi-update='git -C ~/repos/lavish-axi pull && (cd ~/repos/lavish-axi && pnpm install && pnpm run build)'
 
 # Dual-boot helpers. The firmware boot-menu window is 1s wide, so catching
 # F12/Del is a coin flip. Both of these set a UEFI one-shot variable instead:

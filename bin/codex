@@ -1,0 +1,5 @@
+#!/bin/bash
+# Codex runs commands in the account's login shell and has no setting for it, so it
+# sees bash there while the account itself stays on zsh.
+exec 3< <(sed "s#^\($(id -un):.*:\)[^:]*\$#\1/usr/bin/bash#" /etc/passwd)
+exec bwrap --dev-bind / / --ro-bind-data 3 /etc/passwd /usr/bin/codex "$@"

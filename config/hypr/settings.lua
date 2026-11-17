@@ -68,6 +68,7 @@ hl.config({
         repeat_delay = 300,
         numlock_by_default = true,
         follow_mouse = 1,
+        accel_profile = "flat",
         float_switch_override_focus = 0,
     },
     binds = {

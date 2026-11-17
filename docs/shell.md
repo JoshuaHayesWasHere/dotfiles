@@ -9,7 +9,7 @@ Three files, loaded in different circumstances. This split is deliberate:
 | File | Loads for | Holds |
 |------|-----------|-------|
 | `zsh/zshenv` | **every** zsh: login, scripts, agent/automation shells | `GOPATH`, `TF_PLUGIN_CACHE_DIR`, `HISTFILE`, `PATH` (including mise's shims, which carry Node), then sources `functions.zsh` |
-| `zsh/functions.zsh` | **every** zsh (via zshenv) | `awslogin` & friends, `clip`/`dclip`, `winnifred` |
+| `zsh/functions.zsh` | **every** zsh (via zshenv) | `awslogin` & friends, `dclip` |
 | `zsh/zshrc` | **interactive human shells only** | Oh My Zsh + plugins, Starship, `mise activate`, zoxide, greeting, the eza/bat/rg aliases |
 
 `zshrc` returns early when `$CLAUDECODE` or `$AI_AGENT` is set. Claude Code snapshots
@@ -45,18 +45,16 @@ Agent shells get plain coreutils and call `eza`/`bat`/`rg` by name.
 
 | Command | Description |
 |---------|-------------|
-| `clip`  | Pipe stdin to the clipboard (`wl-copy`) |
+| `clip`  | Pipe stdin to the clipboard (`wl-copy`), a command in `bin/` |
 | `dclip <cmd>` | Run `<cmd>`, print it and its output to the terminal, and copy both to the primary selection |
 
 ### Project shortcuts
 
 | Command | Runs |
 |---------|------|
-| `winnifred` | `uv run ~/repos/Winnifred/scripts/run-local.py` (function, args pass through) |
+| `winnifred` | `uv run ~/repos/Winnifred/scripts/run-local.py`, a command in `bin/` (args pass through) |
 | `aa` | `uv run --project ~/repos/archaholics-anonymous aa`, an alias until the tool has earned a spot on `PATH`; graduating means `uv tool install --editable` (shim into `~/.local/bin`) and dropping the alias |
 | `hydra-lab` | `uv run --project ~/repos/hydra-lab hydra-lab`, same alias-until-graduated pattern as `aa` |
-| `lavish-axi-update` | Pull and rebuild the npm-linked `~/repos/lavish-axi` checkout, which nothing else updates |
-| `fm` | Attach to the `firstmate` tmux session, creating it first if it is not up (function in `functions.zsh`) |
 | `cl` | `claude` (launch Claude Code) |
 | `claude` | Shell function, not the bare binary: launched from a bare `$HOME` it runs the session in `~/desk` (a persistently-trusted workspace, since `$HOME` itself cannot hold trust). Anywhere else it behaves exactly like `claude`. |
 
