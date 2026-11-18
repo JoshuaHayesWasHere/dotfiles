@@ -30,6 +30,8 @@ check "a config directory is linked" points_at "$HOME/.config/hypr" config/hypr
 check "a systemd unit is linked" points_at "$HOME/.config/systemd/user/hub-watch.timer" systemd/user/hub-watch.timer
 check "sddm is not linked under ~/.config" not test -e "$HOME/.config/sddm"
 check "the Claude settings are linked" points_at "$HOME/.claude/settings.json" claude/settings.json
+check "Claude gets the global AGENTS.md" points_at "$HOME/.claude/CLAUDE.md" agents/AGENTS.md
+check "Codex gets the global AGENTS.md" points_at "$HOME/.codex/AGENTS.md" agents/AGENTS.md
 check "a second run changes nothing and exits 0" "$repo/install" --dry-run
 
 rm "$HOME/.zshrc"; echo mine > "$HOME/.zshrc"
