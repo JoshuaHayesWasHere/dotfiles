@@ -43,7 +43,11 @@ link() {
         linked=$((linked + 1))
         return
     fi
-    if [ -e "$dst" ] || [ -L "$dst" ]; then
+    stale=0
+    if [ -L "$dst" ] && [ ! -e "$dst" ]; then
+        case "$(readlink "$dst")" in "$REPO"/*) stale=1 ;; esac
+    fi
+    if [ "$stale" -eq 0 ] && { [ -e "$dst" ] || [ -L "$dst" ]; }; then
         if [ "$force" -eq 0 ]; then
             echo "conflict  $dst exists and is not a link to $1 (skipped; --force moves it aside)"
             conflicts=$((conflicts + 1))
@@ -115,7 +119,8 @@ if [ ! -e "$HOME/.claude/settings.json" ]; then
     [ -e "$REPO/claude/settings.json" ] && link claude/settings.json "$HOME/.claude/settings.json"
 fi
 link claude/statusline.sh "$HOME/.claude/statusline.sh"
-link claude/CLAUDE.md "$HOME/.claude/CLAUDE.md"
+link agents/AGENTS.md "$HOME/.claude/CLAUDE.md"
+link agents/AGENTS.md "$HOME/.codex/AGENTS.md"
 
 if [ "$system" -eq 1 ]; then
     [ "$(id -u)" -eq 0 ] || as_root=1

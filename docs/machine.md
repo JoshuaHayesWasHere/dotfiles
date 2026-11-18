@@ -27,6 +27,27 @@ The parts that are easy to get wrong:
   `dictation`, which `~/repos/dictation` installs and documents. Without it the
   bind does nothing and the rest of the session is unaffected.
 
+## Boot (UEFI, systemd-boot, no GRUB)
+
+- **Bootloader: systemd-boot** ("Linux Boot Manager", `\EFI\systemd\systemd-bootx64.efi`).
+  There is no GRUB on this machine. The ESP is mounted at **`/boot`** and is
+  root-only, so reading it needs `sudo`.
+- **Arch boots as a UKI**: `/boot/EFI/Linux/arch-linux.efi`, plus
+  `arch-linux-lts.efi` from `linux-lts` as the fallback entry. systemd-boot finds
+  UKIs there by itself; there are no loader entries to edit.
+- **Kernel cmdline lives in `/etc/kernel/cmdline`**, baked into each UKI's
+  `.cmdline` section at build time.
+- **To change kernel parameters**: edit `/etc/kernel/cmdline`, then rebuild with
+  `sudo mkinitcpio -P` (presets: `/etc/mkinitcpio.d/linux{,-lts}.preset`, `default_uki=`).
+  A reboot is required.
+- **Secure Boot is off.** Nothing is signed and `sbctl` is not installed.
+- **Windows**, when installed, lives on its own drive with its own ESP; nothing
+  Arch-side touches it. The zsh `windows` helper picks the first
+  "Windows Boot Manager" entry in `efibootmgr`.
+
+Verify what actually booted with `sudo bootctl list` / `sudo efibootmgr -v`, and
+compare `/proc/cmdline` against `/etc/kernel/cmdline`.
+
 ## System tuning
 
 | File | Why |

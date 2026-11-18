@@ -39,8 +39,9 @@ The screenshots are taken on an off-screen copy of the desktop; [docs/screenshot
 ## Layout
 
 ```
+agents/      global AGENTS.md, linked as ~/.claude/CLAUDE.md and ~/.codex/AGENTS.md
 bash/        bashrc, bash_profile
-claude/      Claude Code status line, example settings, global CLAUDE.md
+claude/      Claude Code status line, example settings
 config/      ~/.config subtrees (Hyprland, waybar, kitty, nvim, etc.), plus sddm/Xsetup
 docs/        keybinds, shell, machine setup
 git/         gitconfig, global ignore
