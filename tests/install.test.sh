@@ -24,6 +24,8 @@ had_settings=0; [ -e "$repo/claude/settings.json" ] && had_settings=1
 check "a dry run on an empty home reports work and exits 1" not "$repo/install" --dry-run
 check "a dry run links nothing" not test -e "$HOME/.zshenv"
 
+mkdir -p "$HOME/.claude"
+ln -s "$repo/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md" # where the global file used to live
 check "install succeeds on an empty home" "$repo/install"
 check "a file is linked" points_at "$HOME/.zshenv" zsh/zshenv
 check "a config directory is linked" points_at "$HOME/.config/hypr" config/hypr
@@ -31,6 +33,7 @@ check "a systemd unit is linked" points_at "$HOME/.config/systemd/user/hub-watch
 check "sddm is not linked under ~/.config" not test -e "$HOME/.config/sddm"
 check "the Claude settings are linked" points_at "$HOME/.claude/settings.json" claude/settings.json
 check "Claude gets the global AGENTS.md" points_at "$HOME/.claude/CLAUDE.md" agents/AGENTS.md
+check "a dead link into the repo is replaced" test -e "$HOME/.claude/CLAUDE.md"
 check "Codex gets the global AGENTS.md" points_at "$HOME/.codex/AGENTS.md" agents/AGENTS.md
 check "a second run changes nothing and exits 0" "$repo/install" --dry-run
 
