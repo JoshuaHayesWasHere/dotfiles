@@ -115,7 +115,6 @@ if [ ! -e "$HOME/.claude/settings.json" ]; then
     [ -e "$REPO/claude/settings.json" ] && link claude/settings.json "$HOME/.claude/settings.json"
 fi
 link claude/statusline.sh "$HOME/.claude/statusline.sh"
-# One global instructions file, linked into every agent CLI that reads one.
 link agents/AGENTS.md "$HOME/.claude/CLAUDE.md"
 link agents/AGENTS.md "$HOME/.codex/AGENTS.md"
 
