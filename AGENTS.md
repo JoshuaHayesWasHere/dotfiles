@@ -1,46 +1,53 @@
-# ~/dotfiles - notes for agents
+# dotfiles
 
-Deliberate decisions in this repo. Do not silently revert them; the page
-named in each bullet has the full rationale.
+The owner's Arch Linux and Hyprland setup: desktop, shell, editor and agent config, published so others can read it. `install` links it into `$HOME` (and `/etc` with `--system`), `bootstrap` sets up a fresh machine. `README.md` covers the pieces, `docs/machine.md` the packages, boot and services, `docs/shell.md` the zsh split, and `config/hypr/README.md` the Hyprland config.
 
-- **This repo is public.** Names of private repos, AWS organizations, profiles
-  and hosts stay out of it. AWS organizations live in the untracked
-  `~/.config/aws-orgs.zsh`; the live Claude settings are an untracked file in
-  another repo, linked at `~/.claude/settings.json`, and
-  `claude/settings.example.json` is the published copy, so mirror any setting
-  worth showing there by hand. Stage files by name: `git add <dir>` has swept
-  runtime state into a commit before.
-- **The zsh three-file split** (`zsh/zshenv`, `zsh/functions.zsh`, `zsh/zshrc`)
-  is intentional. See "How the zsh files split" in `docs/shell.md`. `zshrc` returns early for agent
-  shells on purpose. Do not move interactive weight into `zshenv`, and do not add
-  aliases that shadow coreutils anywhere an agent shell would source them.
-- **The bootloader is systemd-boot booting UKIs**, and kernel parameters live in
-  `/etc/kernel/cmdline`. See the "Boot" section in
-  `docs/machine.md` before touching anything boot-related.
-- **Hyprland is configured in Lua** (`config/hypr`, see its README). Under a
-  Lua config the legacy `hyprctl dispatch workspace 3` form does not parse:
-  anything that dispatches from outside (waybar, swaync, wlogout, quickshell,
-  scripts) must send a Lua expression, e.g.
-  `hyprctl dispatch 'hl.dsp.focus({ workspace = 3 })'`.
-- **Scripts under `config/hypr/scripts` are POSIX `sh`.** Check them with
-  `shellcheck -s sh`.
-- **`docs/keybinds.md` is generated.** After changing a bind, regenerate it with
-  `config/hypr/scripts/keybinds markdown > docs/keybinds.md` (needs the running
-  session). CI runs the other checks; `.github/workflows/check.yml` lists them.
-- **Never retype Nerd Font icon glyphs** (waybar, swaync). They are
-  private-use characters that do not survive retyping; move them with a tool.
-- **Every theme here is written for this repo**: rofi, swaync, wlogout, kitty
-  and the quickshell overview all take their colours from Catppuccin Mocha
-  (kitty and tmux use Frappe). Do not paste in a theme from another dotfiles
-  project; the only third-party files are the official Catppuccin themes for
-  Kvantum and btop, which are MIT and credited in the README.
-- **Try a look change off-screen first.** `docs/screenshots/README.md` describes
-  the headless test desktop the screenshots are taken on; it renders the config
-  without touching the real session.
-- **Shell helpers have a check.** After editing `zsh/functions.zsh`, run
-  `zsh zsh/functions.test.zsh`. It stubs `aws`, so it never signs in for real.
+## Commands
 
-## Maintaining this file
+The checks `.github/workflows/check.yml` runs, from the repo root. The helper tests stub `aws` and the installer tests use a throwaway `$HOME`, so neither touches anything real.
 
-Keep it to things an agent would plausibly get wrong and undo. Point to the
-docs; do not duplicate them. Keep entries concise.
+```sh
+shellcheck -s sh config/hypr/scripts/*
+shellcheck bootstrap install tests/install.test.sh claude/statusline.sh claude/aws-signin-check.sh config/sddm/Xsetup systemd/hub-watch
+for f in zsh/zshenv zsh/zshrc zsh/functions.zsh; do zsh -n "$f"; done
+zsh zsh/functions.test.zsh
+sh tests/install.test.sh
+for f in config/hypr/*.lua; do luac -p "$f"; done
+find config/nvim -name '*.lua' -print0 | xargs -0 -n1 luajit -bl > /dev/null
+git ls-files '*.json' | xargs -r -n1 jq empty
+gitleaks git --no-banner --log-opts=--all .
+d=$(mktemp -d); XDG_RUNTIME_DIR="$d" Hyprland --verify-config -c "$PWD/config/hypr/hyprland.lua"; rm -rf "$d"  # prints "config ok"
+```
+
+| What | Command |
+|---|---|
+| Link drift on this machine | `cd ~/dotfiles && ./install --dry-run` (changes nothing; exits 1 when anything would change) |
+| Link into `$HOME` / `/etc` | `./install` / `./install --system`, from `~/dotfiles` after a merge |
+| Regenerate `docs/keybinds.md` | `config/hypr/scripts/keybinds markdown > docs/keybinds.md` |
+
+`docs/keybinds.md` is generated from the running compositor, so after changing a bind, regenerate it once the bind is live. Never edit it by hand.
+
+## The live machine
+
+- `~/dotfiles` is the live config: everything is symlinked from it, and Hyprland reloads its config when a file there changes. Make changes in a worktree; they go live when merged into `arch` and pulled into `~/dotfiles`. `./install --dry-run` in a worktree compares against the worktree's own paths, so its output means nothing there.
+- The main checkout often holds the owner's uncommitted work. Do not commit, stash or reset it unless asked.
+- `agents/AGENTS.md` is the global instruction file every agent on the machine loads (`install` links it for Claude Code and Codex). A change there changes every repo's agents.
+- Try a look change on the off-screen desktop in `docs/screenshots/README.md` before touching the real session.
+
+## Rules
+
+- This repo is public. Names of private repos, AWS organizations, profiles, hosts and personal email addresses stay out of it. AWS organizations live in the untracked `~/.config/aws-orgs.zsh`. The live Claude settings are an untracked file from another repo linked at `~/.claude/settings.json`; mirror any setting worth showing into `claude/settings.example.json` by hand.
+- Stage files by name. `git add <dir>` has swept runtime state into a commit before.
+- `zsh/zshrc` returns early for agent shells on purpose. Do not move interactive weight into `zsh/zshenv`, and do not add aliases that shadow coreutils anywhere an agent shell sources them.
+- Hyprland is configured in Lua, so anything that dispatches from outside (waybar, swaync, wlogout, quickshell, scripts) sends a Lua expression, for example `hyprctl dispatch 'hl.dsp.focus({ workspace = 3 })'`. The legacy `hyprctl dispatch workspace 3` form does not parse.
+- Scripts under `config/hypr/scripts` are POSIX `sh`.
+- Move Nerd Font icon glyphs (waybar, swaync) with a tool, never by retyping. They are private-use characters that do not survive it.
+- Every theme is written for this repo. Do not paste one in from another dotfiles project. The only third-party themes are the official Catppuccin ones for Kvantum and btop, MIT and credited in the README.
+
+## Commits and PRs
+
+PRs target `arch`, the default branch. Commit subjects are `area: what changed`, lowercase area, for example `hypr: Super+Alt+D toggles dictation hands-free` or `agents: one global AGENTS.md that Claude Code and Codex both read`. Areas in use: `hypr`, `nvim`, `agents`, `ci`, `chore`.
+
+## Done means
+
+End every task by saying: committed, pushed, merged, whether `~/dotfiles` was pulled so the change is live, whether `./install` ran, and whether anything needs a reboot or relogin. Remove worktrees and branches you created once their work has merged.
