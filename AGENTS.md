@@ -1,10 +1,10 @@
 # dotfiles
 
-The owner's Arch Linux and Hyprland setup: desktop, shell, editor and agent config, published so others can read it. `install` links it into `$HOME` (and `/etc` with `--system`), `bootstrap` sets up a fresh machine. `README.md` covers the pieces, `docs/machine.md` the packages, boot and services, `docs/shell.md` the zsh split, and `config/hypr/README.md` the Hyprland config.
+The owner's Arch Linux and Hyprland setup: desktop, shell, editor and agent config, published so others can read it. `install` links it into `$HOME` (and `/etc` with `--system`), `bootstrap` sets up a fresh machine. `README.md` covers the pieces, `docs/machine.md` the packages, boot and services (read its "Boot" section before touching UKIs, systemd-boot or `/etc/kernel/cmdline`), `docs/shell.md` the zsh split, and `config/hypr/README.md` the Hyprland config.
 
 ## Commands
 
-The checks `.github/workflows/check.yml` runs, from the repo root. The helper tests stub `aws` and the installer tests use a throwaway `$HOME`, so neither touches anything real.
+The checks `.github/workflows/check.yml` runs, from the repo root. The helper tests stub `aws` and the installer tests use a throwaway `$HOME`. The installer test still creates `claude/settings.json` in the checkout when it is missing and removes it at the end, so run it from a worktree, not `~/dotfiles`.
 
 ```sh
 shellcheck -s sh config/hypr/scripts/*
@@ -16,16 +16,16 @@ for f in config/hypr/*.lua; do luac -p "$f"; done
 find config/nvim -name '*.lua' -print0 | xargs -0 -n1 luajit -bl > /dev/null
 git ls-files '*.json' | xargs -r -n1 jq empty
 gitleaks git --no-banner --log-opts=--all .
-d=$(mktemp -d); XDG_RUNTIME_DIR="$d" Hyprland --verify-config -c "$PWD/config/hypr/hyprland.lua"; rm -rf "$d"  # prints "config ok"
+d=$(mktemp -d); XDG_RUNTIME_DIR="$d" Hyprland --verify-config -c "$PWD/config/hypr/hyprland.lua" > "$d.log"; rm -rf "$d"; grep -qx 'config ok' "$d.log" && rm "$d.log"  # passes only on CI's exact "config ok" line
 ```
 
 | What | Command |
 |---|---|
 | Link drift on this machine | `cd ~/dotfiles && ./install --dry-run` (changes nothing; exits 1 when anything would change) |
 | Link into `$HOME` / `/etc` | `./install` / `./install --system`, from `~/dotfiles` after a merge |
-| Regenerate `docs/keybinds.md` | `config/hypr/scripts/keybinds markdown > docs/keybinds.md` |
+| Regenerate `docs/keybinds.md` | `t=$(mktemp) && config/hypr/scripts/keybinds markdown > "$t"`, check `$t` has bind rows (a bad compositor signature gives an empty table and still exits 0), then move it over `docs/keybinds.md` |
 
-`docs/keybinds.md` is generated from the running compositor, so after changing a bind, regenerate it once the bind is live. Never edit it by hand.
+`docs/keybinds.md` is generated from the running compositor's binds, not from the checkout, so after changing a bind, regenerate it once the bind is live. Never edit it by hand.
 
 ## The live machine
 
